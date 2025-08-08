@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Сапёр 1win - механика казино</title>
+<title>Сапёр 1win с сохранением и админ-консолью</title>
 <style>
-  /* (тот же CSS, что и в предыдущем коде — не менялся) */
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
   body {
     margin: 0; padding: 0;
@@ -125,7 +124,7 @@
     position: relative;
     transition: background 0.3s, color 0.3s;
   }
-  .cell:hover:not(.opened):not(.flagged):not(.disabled) {
+  .cell:hover:not(.opened):not(.disabled) {
     background: #3b82f6;
     box-shadow: 0 0 12px #3b82f6;
   }
@@ -178,6 +177,34 @@
   #message.hidden {
     opacity: 0;
   }
+
+  /* Админ-консоль */
+  #adminConsole {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    background: #222;
+    color: #0f0;
+    font-family: monospace;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 8px;
+    display: none;
+    z-index: 9999;
+  }
+  #consoleOutput {
+    height: 110px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+  #consoleInput {
+    width: 100%;
+    background: #000;
+    color: #0f0;
+    border: none;
+    padding: 6px;
+    font-family: monospace;
+  }
 </style>
 </head>
 <body>
@@ -200,6 +227,12 @@
   <button id="takeBtn" class="hidden">Забрать</button>
 
   <div id="message" class="hidden" role="alert"></div>
+
+  <!-- Админ-консоль -->
+  <div id="adminConsole">
+    <div id="consoleOutput"></div>
+    <input id="consoleInput" placeholder="Введите команду..."/>
+  </div>
 
 <script>
   const ROWS = 10;
@@ -226,94 +259,81 @@
   const multiplierEl = document.getElementById('multiplier');
   const arrowEl = document.getElementById('arrow');
 
+  // Админ-консоль
+  const adminConsole = document.getElementById('adminConsole');
+  const consoleInput = document.getElementById('consoleInput');
+  const consoleOutput = document.getElementById('consoleOutput');
+
+  // Промо-токены и их значения
+  const tokens = {
+    'TOKEN1000': 1000,
+    'TOKEN5000': 5000,
+    'TOKEN10000': 10000,
+  };
+
+  // Форматировать в USD
   function formatUSD(amount) {
     return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
   }
 
+  // Обновить отображение баланса (с учетом текущего выигрыша)
   function updateBalance() {
-    balanceEl.textContent = `Баланс: ${formatUSD(balance)}`;
-  }
-
-  function updateBalanceWithSession() {
     balanceEl.textContent = `Баланс: ${formatUSD(balance + sessionEarned)}`;
   }
 
+  // Сохранять баланс в localStorage
+  function saveBalance() {
+    localStorage.setItem('mines_balance_usd', balance.toString());
+  }
+
+  // Загружать баланс из localStorage
   function loadBalance() {
     const saved = localStorage.getItem('mines_balance_usd');
     if(saved !== null) {
       const val = parseInt(saved, 10);
       if(!isNaN(val) && val > 0) {
         balance = val;
-      } else {
-        balance = 5000000;
       }
-    } else {
-      balance = 5000000;
     }
     updateBalance();
   }
 
-  function saveBalance() {
-    localStorage.setItem('mines_balance_usd', balance.toString());
+  // Обновлять UI уровня и множителя
+  function updateLevelUI() {
+    levelEl.textContent = level;
+    const multiplier = level === 1 ? 2 : (level - 1);
+    multiplierEl.textContent = `x${multiplier}`;
+    arrowEl.style.transform = `translateY(${(level - 1) * 68}px)`;
   }
 
-  betInput.addEventListener('input', () => {
-    let val = parseInt(betInput.value, 10);
-    if(isNaN(val) || val < 1) {
-      startBtn.disabled = true;
-      bet = null;
-      return;
+  // Проверять выигрыш (открыты все безопасные клетки)
+  function checkWin() {
+    if(openedCount === ROWS * COLS - ROWS) {
+      gameOver = true;
+      messageEl.textContent = `Вы выиграли! Выигрыш: ${formatUSD(sessionEarned)}`;
+      messageEl.style.color = '#60a5fa';
+      messageEl.style.textShadow = '0 0 12px #2563eb';
+      messageEl.classList.remove('hidden');
+      takeBtn.classList.remove('hidden');
+      boardEl.style.pointerEvents = 'none';
     }
-    if(val > balance) val = balance;
-    betInput.value = val;
-    bet = val;
-    startBtn.disabled = val > balance;
-    messageEl.classList.add('hidden');
-  });
-
-  startBtn.addEventListener('click', () => {
-    if(!bet || bet > balance) return;
-    startGame();
-  });
-
-  function startGame() {
-    betContainer.classList.add('hidden');
-    startBtn.classList.add('hidden');
-    messageEl.classList.add('hidden');
-
-    boardEl.style.display = 'grid';
-    takeBtn.classList.add('hidden');
-    levelInfo.style.display = 'flex';
-
-    balance -= bet;
-    updateBalance();
-    sessionEarned = 0;
-    level = 1;
-    openedCount = 0;
-    updateLevelUI();
-
-    createBoard();
-    gameOver = false;
   }
 
+  // Создание игрового поля и расстановка мин
   function createBoard() {
     boardEl.innerHTML = '';
     board = [];
     minePositions = [];
 
-    // Новая логика установки мин:
-    // Если ставка <= половина баланса — НЕ ставим бомбу на первом уровне
-    // Иначе ставим бомбу на первой клетке первого уровня (гарантированный слив)
+    // Логика казино: ставка больше половины баланса — слив на 1 уровне
     const mustLose = bet > balance / 2;
 
     for(let r=0; r<ROWS; r++) {
       board[r] = [];
       let mineCol;
       if(mustLose && r === 0) {
-        // первая линия — бомба в случайном столбце (для сливной первой клетки)
         mineCol = Math.floor(Math.random() * COLS);
       } else {
-        // Иначе обычное рандомное расположение бомбы в каждой строке
         mineCol = Math.floor(Math.random() * COLS);
       }
       minePositions[r] = mineCol;
@@ -339,15 +359,14 @@
       }
     }
 
-    // Если mustLose = false, то убираем бомбу с первой линии, чтобы был гарантированный выигрыш на 1 уровне
     if(!mustLose) {
-      const firstRowMine = minePositions[0];
+      // Нет мин на первом уровне
       for(let c=0; c<COLS; c++) {
         board[0][c].mine = false;
         board[0][c].element.classList.remove('mine');
         board[0][c].element.textContent = '';
       }
-      // По умолчанию, ставим бомбу в последнем ряду, чтобы игра была честной, но минимальная
+      // Бомба только в последней строке
       const lastRow = ROWS - 1;
       const lastMineCol = Math.floor(Math.random() * COLS);
       minePositions[lastRow] = lastMineCol;
@@ -355,10 +374,9 @@
     }
   }
 
+  // Открытие клетки
   function openCell(r, c) {
-    // Разрешаем открывать только клетки в текущем уровне (r === level - 1)
-    if (r !== level - 1) return;
-
+    if(r !== level - 1) return; // Можно открывать только текущий уровень
     const cell = board[r][c];
     if(cell.opened) return;
     cell.opened = true;
@@ -373,14 +391,13 @@
     }
 
     cell.element.classList.add('correct');
-
     level++;
     updateLevelUI();
 
-    // Множитель: на 1 уровне = x2, потом +1
+    // Множитель
     const multiplier = level === 2 ? 2 : (level - 1);
     sessionEarned = bet * multiplier;
-    updateBalanceWithSession();
+    updateBalance();
 
     messageEl.classList.add('hidden');
     takeBtn.classList.remove('hidden');
@@ -388,14 +405,7 @@
     checkWin();
   }
 
-  function updateLevelUI() {
-    levelEl.textContent = level;
-    // Множитель, с x2 на первом уровне:
-    const multiplier = level === 1 ? 2 : (level - 1);
-    multiplierEl.textContent = `x${multiplier}`;
-    arrowEl.style.transform = `translateY(${(level - 1) * 68}px)`;
-  }
-
+  // Проигрыш
   function loseGame() {
     gameOver = true;
     sessionEarned = 0;
@@ -405,54 +415,138 @@
     messageEl.style.textShadow = '0 0 15px #dc2626';
     messageEl.classList.remove('hidden');
 
+    setTimeout(() => {
+      // Автоматический рестарт
+      resetGame();
+    }, 2500);
+  }
+
+  // Сброс игры к выбору ставки
+  function resetGame() {
     betContainer.classList.remove('hidden');
     startBtn.classList.remove('hidden');
     startBtn.disabled = balance < 1;
     boardEl.style.display = 'none';
     takeBtn.classList.add('hidden');
     levelInfo.style.display = 'none';
-
+    messageEl.classList.add('hidden');
     updateBalance();
-
-    saveBalance();
+    gameOver = false;
+    bet = null;
+    betInput.value = '';
+    boardEl.style.pointerEvents = 'auto';
   }
 
-  function checkWin() {
-    if(openedCount === ROWS * COLS - ROWS) {
-      gameOver = true;
+  // Старт игры
+  function startGame() {
+    if(!bet || bet > balance) return;
+    betContainer.classList.add('hidden');
+    startBtn.classList.add('hidden');
+    messageEl.classList.add('hidden');
+    boardEl.style.display = 'grid';
+    takeBtn.classList.add('hidden');
+    levelInfo.style.display = 'flex';
 
-      messageEl.textContent = `Вы выиграли! Выигрыш: ${formatUSD(sessionEarned)}`;
-      messageEl.style.color = '#60a5fa';
-      messageEl.style.textShadow = '0 0 12px #2563eb';
-      messageEl.classList.remove('hidden');
+    balance -= bet;
+    updateBalance();
+    sessionEarned = 0;
+    level = 1;
+    openedCount = 0;
+    updateLevelUI();
 
-      takeBtn.classList.remove('hidden');
-      boardEl.style.pointerEvents = 'none';
-    }
+    createBoard();
+    gameOver = false;
   }
 
+  // Забрать выигрыш
   takeBtn.addEventListener('click', () => {
     if(sessionEarned > 0) {
       balance += sessionEarned;
       sessionEarned = 0;
       saveBalance();
-
-      boardEl.style.display = 'none';
-      takeBtn.classList.add('hidden');
-      betContainer.classList.remove('hidden');
-      startBtn.classList.remove('hidden');
-      startBtn.disabled = balance < 1;
-      messageEl.classList.add('hidden');
-      levelInfo.style.display = 'none';
-      updateBalance();
-      gameOver = false;
-      bet = null;
-      betInput.value = '';
-      boardEl.style.pointerEvents = 'auto';
+      resetGame();
     }
   });
 
+  // Обработка ввода ставки
+  betInput.addEventListener('input', () => {
+    let val = parseInt(betInput.value, 10);
+    if(isNaN(val) || val < 1) {
+      startBtn.disabled = true;
+      bet = null;
+      return;
+    }
+    if(val > balance) val = balance;
+    betInput.value = val;
+    bet = val;
+    startBtn.disabled = val > balance;
+    messageEl.classList.add('hidden');
+  });
+
+  startBtn.addEventListener('click', startGame);
+
+  // === Админ-консоль ===
+
+  function logToConsole(text) {
+    consoleOutput.textContent += text + '\n';
+    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === '`') {
+      if(adminConsole.style.display === 'none') {
+        adminConsole.style.display = 'block';
+        consoleInput.focus();
+        logToConsole('Админ-консоль открыта. Введите "help".');
+      } else {
+        adminConsole.style.display = 'none';
+      }
+    }
+  });
+
+  consoleInput.addEventListener('keydown', e => {
+    if(e.key === 'Enter') {
+      const command = consoleInput.value.trim();
+      if(command) {
+        processCommand(command);
+        consoleInput.value = '';
+      }
+    }
+  });
+
+  function processCommand(cmd) {
+    const parts = cmd.split(' ');
+    const baseCmd = parts[0].toLowerCase();
+
+    if(baseCmd === 'help') {
+      logToConsole('Команды:\n - balance\n - give TOKEN\n - clear');
+    } else if(baseCmd === 'balance') {
+      logToConsole(`Баланс: ${balance} USD`);
+    } else if(baseCmd === 'give') {
+      if(parts.length < 2) {
+        logToConsole('Использование: give TOKEN');
+        return;
+      }
+      const token = parts[1].toUpperCase();
+      if(tokens[token]) {
+        balance += tokens[token];
+        saveBalance();
+        updateBalance();
+        logToConsole(`Токен ${token} принят. Добавлено ${tokens[token]} USD.`);
+      } else {
+        logToConsole(`Токен ${token} не найден.`);
+      }
+    } else if(baseCmd === 'clear') {
+      consoleOutput.textContent = '';
+    } else {
+      logToConsole(`Неизвестная команда: ${cmd}`);
+    }
+  }
+
+  // Загрузка баланса при старте
   loadBalance();
 </script>
 </body>
 </html>
+
+
