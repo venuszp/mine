@@ -209,7 +209,7 @@
 </head>
 <body>
 
-  <div id="balance">Баланс: $5,000,000</div>
+  <div id="balance">Баланс: $0</div>
 
   <div id="levelInfo" style="display:none;">
     <div>Уровень: <span id="level">1</span></div>
@@ -235,10 +235,12 @@
   </div>
 
 <script>
+  const GAME_VERSION = '1.0.1';
+
   const ROWS = 10;
   const COLS = 3;
 
-  let balance = 5000000;
+  let balance = 0;
   let bet = null;
   let board = [];
   let minePositions = [];
@@ -271,34 +273,42 @@
     'TOKEN10000': 10000,
   };
 
-  // Форматировать в USD
   function formatUSD(amount) {
     return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
   }
 
-  // Обновить отображение баланса (с учетом текущего выигрыша)
   function updateBalance() {
     balanceEl.textContent = `Баланс: ${formatUSD(balance + sessionEarned)}`;
   }
 
-  // Сохранять баланс в localStorage
   function saveBalance() {
     localStorage.setItem('mines_balance_usd', balance.toString());
+    localStorage.setItem('mines_game_version', GAME_VERSION);
   }
 
-  // Загружать баланс из localStorage
   function loadBalance() {
-    const saved = localStorage.getItem('mines_balance_usd');
-    if(saved !== null) {
-      const val = parseInt(saved, 10);
-      if(!isNaN(val) && val > 0) {
-        balance = val;
+    const savedVersion = localStorage.getItem('mines_game_version');
+    if(savedVersion !== GAME_VERSION) {
+      balance = 100;
+      localStorage.setItem('mines_game_version', GAME_VERSION);
+      localStorage.setItem('mines_balance_usd', balance.toString());
+    } else {
+      const saved = localStorage.getItem('mines_balance_usd');
+      if(saved !== null) {
+        const val = parseInt(saved, 10);
+        if(!isNaN(val) && val >= 100) {
+          balance = val;
+        } else {
+          balance = 100;
+        }
+      } else {
+        balance = 100;
       }
     }
     updateBalance();
+    logToConsole(`Версия игры: ${GAME_VERSION}`);
   }
 
-  // Обновлять UI уровня и множителя
   function updateLevelUI() {
     levelEl.textContent = level;
     const multiplier = level === 1 ? 2 : (level - 1);
@@ -306,7 +316,6 @@
     arrowEl.style.transform = `translateY(${(level - 1) * 68}px)`;
   }
 
-  // Проверять выигрыш (открыты все безопасные клетки)
   function checkWin() {
     if(openedCount === ROWS * COLS - ROWS) {
       gameOver = true;
@@ -319,23 +328,16 @@
     }
   }
 
-  // Создание игрового поля и расстановка мин
   function createBoard() {
     boardEl.innerHTML = '';
     board = [];
     minePositions = [];
 
-    // Логика казино: ставка больше половины баланса — слив на 1 уровне
     const mustLose = bet > balance / 2;
 
     for(let r=0; r<ROWS; r++) {
       board[r] = [];
-      let mineCol;
-      if(mustLose && r === 0) {
-        mineCol = Math.floor(Math.random() * COLS);
-      } else {
-        mineCol = Math.floor(Math.random() * COLS);
-      }
+      let mineCol = Math.floor(Math.random() * COLS);
       minePositions[r] = mineCol;
 
       for(let c=0; c<COLS; c++) {
@@ -360,13 +362,11 @@
     }
 
     if(!mustLose) {
-      // Нет мин на первом уровне
       for(let c=0; c<COLS; c++) {
         board[0][c].mine = false;
         board[0][c].element.classList.remove('mine');
         board[0][c].element.textContent = '';
       }
-      // Бомба только в последней строке
       const lastRow = ROWS - 1;
       const lastMineCol = Math.floor(Math.random() * COLS);
       minePositions[lastRow] = lastMineCol;
@@ -374,9 +374,8 @@
     }
   }
 
-  // Открытие клетки
   function openCell(r, c) {
-    if(r !== level - 1) return; // Можно открывать только текущий уровень
+    if(r !== level - 1) return;
     const cell = board[r][c];
     if(cell.opened) return;
     cell.opened = true;
@@ -394,7 +393,6 @@
     level++;
     updateLevelUI();
 
-    // Множитель
     const multiplier = level === 2 ? 2 : (level - 1);
     sessionEarned = bet * multiplier;
     updateBalance();
@@ -405,123 +403,116 @@
     checkWin();
   }
 
-  // Проигрыш
   function loseGame() {
     gameOver = true;
     sessionEarned = 0;
+
+    saveBalance();
 
     messageEl.textContent = 'Жаль...';
     messageEl.style.color = '#ef4444';
     messageEl.style.textShadow = '0 0 15px #dc2626';
     messageEl.classList.remove('hidden');
+    takeBtn.classList.add('hidden');
+    boardEl.style.pointerEvents = 'none';
 
     setTimeout(() => {
-      // Автоматический рестарт
       resetGame();
     }, 2500);
   }
 
-  // Сброс игры к выбору ставки
   function resetGame() {
-    betContainer.classList.remove('hidden');
-    startBtn.classList.remove('hidden');
-    startBtn.disabled = balance < 1;
-    boardEl.style.display = 'none';
-    takeBtn.classList.add('hidden');
-    levelInfo.style.display = 'none';
-    messageEl.classList.add('hidden');
-    updateBalance();
     gameOver = false;
-    bet = null;
-    betInput.value = '';
-    boardEl.style.pointerEvents = 'auto';
-  }
-
-  // Старт игры
-  function startGame() {
-    if(!bet || bet > balance) return;
-    betContainer.classList.add('hidden');
-    startBtn.classList.add('hidden');
-    messageEl.classList.add('hidden');
-    boardEl.style.display = 'grid';
-    takeBtn.classList.add('hidden');
-    levelInfo.style.display = 'flex';
-
-    balance -= bet;
-    updateBalance();
+    openedCount = 0;
     sessionEarned = 0;
     level = 1;
-    openedCount = 0;
-    updateLevelUI();
 
-    createBoard();
-    gameOver = false;
+    betInput.value = '';
+    betInput.disabled = false;
+    startBtn.disabled = true;
+    startBtn.classList.remove('hidden');
+    takeBtn.classList.add('hidden');
+    messageEl.classList.add('hidden');
+    boardEl.style.pointerEvents = 'auto';
+    boardEl.style.display = 'none';
+    betContainer.classList.remove('hidden');
+    levelInfo.style.display = 'none';
+    updateBalance();
   }
 
-  // Забрать выигрыш
-  takeBtn.addEventListener('click', () => {
-    if(sessionEarned > 0) {
-      balance += sessionEarned;
-      sessionEarned = 0;
-      saveBalance();
-      resetGame();
-    }
-  });
-
-  // Обработка ввода ставки
-  betInput.addEventListener('input', () => {
-    let val = parseInt(betInput.value, 10);
-    if(isNaN(val) || val < 1) {
-      startBtn.disabled = true;
-      bet = null;
+  function startGame() {
+    bet = parseInt(betInput.value, 10);
+    if(isNaN(bet) || bet < 1 || bet > balance) {
+      alert('Введите корректную ставку, не превышающую баланс');
       return;
     }
-    if(val > balance) val = balance;
-    betInput.value = val;
-    bet = val;
-    startBtn.disabled = val > balance;
+    balance -= bet;
+    saveBalance();
+    updateBalance();
+
+    createBoard();
+    boardEl.style.display = 'grid';
+    betInput.disabled = true;
+    startBtn.disabled = true;
+    betContainer.classList.add('hidden');
+    levelInfo.style.display = 'flex';
+    updateLevelUI();
     messageEl.classList.add('hidden');
+    takeBtn.classList.add('hidden');
+  }
+
+  function takeWin() {
+    balance += sessionEarned;
+    sessionEarned = 0;
+    saveBalance();
+    updateBalance();
+
+    messageEl.textContent = 'Успешно забрано!';
+    messageEl.style.color = '#22c55e';
+    messageEl.style.textShadow = '0 0 20px #22c55e';
+    messageEl.classList.remove('hidden');
+
+    takeBtn.classList.add('hidden');
+    boardEl.style.pointerEvents = 'none';
+
+    setTimeout(() => {
+      messageEl.classList.add('hidden');
+      resetGame();
+    }, 2500);
+  }
+
+  // Валидация ставки
+  betInput.addEventListener('input', () => {
+    const val = parseInt(betInput.value, 10);
+    if(val >=1 && val <= balance) {
+      startBtn.disabled = false;
+    } else {
+      startBtn.disabled = true;
+    }
   });
 
   startBtn.addEventListener('click', startGame);
+  takeBtn.addEventListener('click', takeWin);
 
-  // === Админ-консоль ===
+  // --- Админ-консоль ---
 
   function logToConsole(text) {
     consoleOutput.textContent += text + '\n';
     consoleOutput.scrollTop = consoleOutput.scrollHeight;
   }
 
-  document.addEventListener('keydown', (e) => {
-    if(e.key === '`') {
-      if(adminConsole.style.display === 'none') {
-        adminConsole.style.display = 'block';
-        consoleInput.focus();
-        logToConsole('Админ-консоль открыта. Введите "help".');
-      } else {
-        adminConsole.style.display = 'none';
-      }
-    }
-  });
+  function handleConsoleInput(e) {
+    if(e.key !== 'Enter') return;
+    const cmd = consoleInput.value.trim();
+    consoleInput.value = '';
 
-  consoleInput.addEventListener('keydown', e => {
-    if(e.key === 'Enter') {
-      const command = consoleInput.value.trim();
-      if(command) {
-        processCommand(command);
-        consoleInput.value = '';
-      }
-    }
-  });
-
-  function processCommand(cmd) {
     const parts = cmd.split(' ');
     const baseCmd = parts[0].toLowerCase();
 
     if(baseCmd === 'help') {
-      logToConsole('Команды:\n - balance\n - give TOKEN\n - clear');
+      logToConsole('Команды: help - помощь\nbalance - баланс\n give TOKEN - выдать токен\nclear - очистить');
     } else if(baseCmd === 'balance') {
-      logToConsole(`Баланс: ${balance} USD`);
+      logToConsole(`Баланс: ${formatUSD(balance)} USD`);
     } else if(baseCmd === 'give') {
       if(parts.length < 2) {
         logToConsole('Использование: give TOKEN');
@@ -532,7 +523,7 @@
         balance += tokens[token];
         saveBalance();
         updateBalance();
-        logToConsole(`Токен ${token} принят. Добавлено ${tokens[token]} USD.`);
+        logToConsole(`Токен ${token} принят. Добавлено ${formatUSD(tokens[token])}.`);
       } else {
         logToConsole(`Токен ${token} не найден.`);
       }
@@ -543,11 +534,27 @@
     }
   }
 
-  // Загрузка баланса при старте
+  consoleInput.addEventListener('keydown', handleConsoleInput);
+
+  // Открытие/закрытие админ-консоли клавишей тильда (~)
+  document.addEventListener('keydown', e => {
+    if(e.key === '~') {
+      if(adminConsole.style.display === 'none') {
+        adminConsole.style.display = 'block';
+        consoleInput.focus();
+      } else {
+        adminConsole.style.display = 'none';
+      }
+    }
+  });
+
   loadBalance();
+  resetGame();
+
 </script>
 </body>
 </html>
+
 
 
 
