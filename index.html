@@ -68,7 +68,7 @@
     color: #121b2f;
     user-select: text;
   }
-  #startBtn, #takeBtn {
+  #startBtn, #takeBtn, #withdrawBtn {
     background: #10b981;
     border: none;
     color: white;
@@ -85,11 +85,11 @@
     cursor: not-allowed;
     box-shadow: none;
   }
-  #startBtn:hover:not(:disabled), #takeBtn:hover {
+  #startBtn:hover:not(:disabled), #takeBtn:hover, #withdrawBtn:hover {
     background: #059669;
     box-shadow: 0 0 25px #059669;
   }
-  #takeBtn.hidden, #startBtn.hidden, #betContainer.hidden {
+  #takeBtn.hidden, #startBtn.hidden, #betContainer.hidden, #withdrawBtn.hidden {
     opacity: 0;
     pointer-events: none;
   }
@@ -225,6 +225,7 @@
   <div id="board" aria-label="Игровое поле сапёра" role="grid" style="display:none;"></div>
 
   <button id="takeBtn" class="hidden">Забрать</button>
+  <button id="withdrawBtn" class="hidden">Вывод 100000</button>
 
   <div id="message" class="hidden" role="alert"></div>
 
@@ -254,6 +255,7 @@
   const startBtn = document.getElementById('startBtn');
   const boardEl = document.getElementById('board');
   const takeBtn = document.getElementById('takeBtn');
+  const withdrawBtn = document.getElementById('withdrawBtn');
   const messageEl = document.getElementById('message');
   const betContainer = document.getElementById('betContainer');
   const levelInfo = document.getElementById('levelInfo');
@@ -311,7 +313,7 @@
 
   function updateLevelUI() {
     levelEl.textContent = level;
-    const multiplier = level === 1 ? 2 : (level - 1);
+    const multiplier = level + 1;  // Множитель: x2, x3, x4...
     multiplierEl.textContent = `x${multiplier}`;
     arrowEl.style.transform = `translateY(${(level - 1) * 68}px)`;
   }
@@ -333,7 +335,7 @@
     board = [];
     minePositions = [];
 
-    const mustLose = bet > balance / 2;
+    const mustLose = bet >= balance * 0.7; // Слив, если ставка >= 70% баланса
 
     for(let r=0; r<ROWS; r++) {
       board[r] = [];
@@ -393,7 +395,7 @@
     level++;
     updateLevelUI();
 
-    const multiplier = level === 2 ? 2 : (level - 1);
+    const multiplier = level + 1;
     sessionEarned = bet * multiplier;
     updateBalance();
 
@@ -503,58 +505,72 @@
 
   function handleConsoleInput(e) {
     if(e.key !== 'Enter') return;
-    const cmd = consoleInput.value.trim();
-    consoleInput.value = '';
+const cmd = consoleInput.value.trim();
+consoleInput.value = '';
 
-    const parts = cmd.split(' ');
-    const baseCmd = parts[0].toLowerCase();
+const parts = cmd.split(' ');
+const baseCmd = parts[0].toLowerCase();
 
-    if(baseCmd === 'help') {
-      logToConsole('Команды: help - помощь\nbalance - баланс\n give TOKEN - выдать токен\nclear - очистить');
-    } else if(baseCmd === 'balance') {
-      logToConsole(`Баланс: ${formatUSD(balance)} USD`);
-    } else if(baseCmd === 'give') {
-      if(parts.length < 2) {
-        logToConsole('Использование: give TOKEN');
-        return;
-      }
-      const token = parts[1].toUpperCase();
-      if(tokens[token]) {
-        balance += tokens[token];
-        saveBalance();
-        updateBalance();
-        logToConsole(`Токен ${token} принят. Добавлено ${formatUSD(tokens[token])}.`);
-      } else {
-        logToConsole(`Токен ${token} не найден.`);
-      }
-    } else if(baseCmd === 'clear') {
-      consoleOutput.textContent = '';
+if(baseCmd === 'help') {
+  logToConsole('Команды: help - помощь\nbalance - баланс\n give TOKEN - выдать токен\nclear - очистить');
+} else if(baseCmd === 'balance') {
+  logToConsole(`Баланс: ${formatUSD(balance)} USD`);
+} else if(baseCmd === 'give') {
+  if(parts.length < 2) {
+    logToConsole('Использование: give TOKEN');
+    return;
+  }
+  const token = parts[1].toUpperCase();
+  if(tokens[token]) {
+    balance += tokens[token];
+    saveBalance();
+    updateBalance();
+    logToConsole(`Токен ${token} принят. Добавлено ${formatUSD(tokens[token])}.`);
+  } else {
+    logToConsole(`Токен ${token} не найден.`);
+  }
+} else if(baseCmd === 'clear') {
+  consoleOutput.textContent = '';
+} else {
+  logToConsole(`Неизвестная команда: ${cmd}`);
+}
+}
+
+consoleInput.addEventListener('keydown', handleConsoleInput);
+
+// Открытие/закрытие админ-консоли клавишей тильда (~)
+document.addEventListener('keydown', e => {
+  if(e.key === '~') {
+    if(adminConsole.style.display === 'none') {
+      adminConsole.style.display = 'block';
+      consoleInput.focus();
     } else {
-      logToConsole(`Неизвестная команда: ${cmd}`);
+      adminConsole.style.display = 'none';
     }
   }
+});
 
-  consoleInput.addEventListener('keydown', handleConsoleInput);
+// Функция для обновления UI кнопки "Вывод"
+function updateWithdrawUI() {
+  if(balance >= 100000) {
+    withdrawBtn.classList.remove('hidden');
+  } else {
+    withdrawBtn.classList.add('hidden');
+  }
+}
 
-  // Открытие/закрытие админ-консоли клавишей тильда (~)
-  document.addEventListener('keydown', e => {
-    if(e.key === '~') {
-      if(adminConsole.style.display === 'none') {
-        adminConsole.style.display = 'block';
-        consoleInput.focus();
-      } else {
-        adminConsole.style.display = 'none';
-      }
-    }
-  });
+// Обработчик вывода средств
+withdrawBtn.addEventListener('click', () => {
+  if(balance >= 100000) {
+    balance -= 100000;
+    saveBalance();
+    updateBalance();
+    updateWithdrawUI();
+    alert('Заявка на вывод 100000 создана!');
+  }
+});
 
-  loadBalance();
-  resetGame();
-
-</script>
-</body>
-</html>
-
-
-
-
+// Инициализация
+loadBalance();
+resetGame();
+updateWithdrawUI(); // Обновление UI кнопки вывода
