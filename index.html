@@ -1,217 +1,348 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Лесенка</title>
-<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+<meta charset="UTF-8">
+<title>Лесенка с минами</title>
 <style>
-  :root{
-    --bg:#071026;
-    --card:#0b1220;
-    --accent1:#7c3aed;
-    --accent2:#f97316;
-    --glass: rgba(255,255,255,0.04);
-    --muted: rgba(226,238,248,0.62);
-    --radius:18px;
-    --soft: cubic-bezier(.2,.9,.25,1);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    color-scheme: dark;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:
-    radial-gradient(800px 400px at 10% 20%, rgba(124,58,237,0.08), transparent),
-    radial-gradient(600px 300px at 90% 80%, rgba(249,115,22,0.05), transparent),
-    var(--bg);
-    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-  }
-  .page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:36px;}
-  .container{width:1060px;max-width:96%;display:grid;grid-template-columns:1fr 420px;gap:28px;}
-
-  /* Панель */
-  .panel{
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border:1px solid var(--glass);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;
-    box-shadow:0 10px 40px rgba(12,20,40,0.6);
-  }
-  h1{margin:0 0 6px 0;font-size:20px;color:#e6eef8}
-  p.desc{margin:0 0 14px 0;color:var(--muted);font-size:13px}
-
-  /* Controls */
-  .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px}
-  .balance{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);padding:12px 16px;border-radius:12px;display:flex;align-items:center;gap:12px;min-width:220px;}
-  .bal-amount{font-weight:700;font-size:18px}
-  .small{font-size:12px;color:var(--muted)}
-  .bet-wrap{display:flex;gap:8px;align-items:center}
-  .bet-input{width:120px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;font-weight:600}
-  .btn{padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;font-weight:700;cursor:pointer;transition:transform .12s var(--soft), box-shadow .12s var(--soft), background .12s var(--soft);}
-  .btn:active{transform:translateY(2px)}
-  .btn.primary{background:linear-gradient(90deg,var(--accent1),#06b6d4);color:#011028;border:none;box-shadow:0 14px 40px rgba(124,58,237,0.16)}
-
-  /* Ladder */
-  .ladder-wrap{display:flex;justify-content:center;align-items:flex-end;position:relative;padding:18px 8px 4px 8px;}
-  .ladder{display:flex;flex-direction:column-reverse;gap:8px;width:620px;max-width:100%}
-  .step{height:56px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.008));border:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:space-between;padding:12px 20px;transition:transform .45s var(--soft), box-shadow .35s var(--soft), background .35s var(--soft);}
-  .step .label{font-weight:700}
-  .step .mult{font-weight:700;color:var(--muted)}
-  .step.hover{transform:translateY(-8px) scale(1.01);border-color:rgba(255,255,255,0.08)}
-  .step.win{background:linear-gradient(90deg, rgba(124,58,237,0.12), rgba(6,182,212,0.06));box-shadow:0 18px 60px rgba(124,58,237,0.12)}
-  .step.lose{background:linear-gradient(90deg, rgba(244,63,94,0.10), rgba(249,115,22,0.04));box-shadow:0 18px 60px rgba(244,63,94,0.10)}
-
-  /* Marker */
-  .marker{position:absolute;left:18px;top:0;width:44px;height:44px;border-radius:10px;background:linear-gradient(180deg,#fff,#e6eef8);display:flex;align-items:center;justify-content:center;font-weight:800;color:#031026;transform:translateY(0);transition:transform .65s cubic-bezier(.2,.9,.2,1);box-shadow:0 14px 40px rgba(2,6,23,0.6);}
-
-  /* Sidebar */
-  .sidebar{display:flex;flex-direction:column;gap:14px}
-  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);padding:16px;border-radius:12px;min-height:120px}
-  .log{max-height:240px;overflow:auto;font-size:13px;color:var(--muted);padding-right:6px}
-  .muted{color:var(--muted);font-size:13px}
-  .controls-right{margin-left:auto;display:flex;gap:8px;align-items:center}
-  .export-btn{background:transparent;border:1px dashed rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;font-size:13px}
+body {
+  margin: 0;
+  height: 100vh;
+  background: linear-gradient(135deg, #1e1e2f, #121212);
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+}
+.wrapper {
+  display: flex;
+  gap: 20px;
+}
+.game-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+.row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.cell {
+  width: 70px;
+  height: 70px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s, background 0.3s;
+}
+.cell:hover {
+  transform: scale(1.05);
+  background: rgba(255,255,255,0.2);
+}
+.cell.win {
+  background: rgba(0,255,128,0.2);
+  box-shadow: 0 0 15px rgba(0,255,128,0.6);
+}
+.cell.mine {
+  background: rgba(255,0,64,0.2);
+  box-shadow: 0 0 15px rgba(255,0,64,0.6);
+}
+/* Взрыв */
+.explosion {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,0,64,1) 0%, rgba(255,128,128,0) 70%);
+  animation: explode 0.8s forwards;
+  z-index: 10;
+}
+@keyframes explode {
+  0% { transform: scale(0.5); opacity: 1; }
+  70% { transform: scale(4); opacity: 0.7; }
+  100% { transform: scale(6); opacity: 0; }
+}
+.sidebar {
+  width: 260px;
+  background: rgba(255,255,255,0.05);
+  padding: 20px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+.sidebar h2 {
+  margin: 0 0 10px 0;
+}
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  transition: all 0.3s;
+}
+input:focus, select:focus {
+  border: 2px solid;
+  border-image-slice: 1;
+  border-image-source: linear-gradient(90deg, #ff416c, #ff4b2b);
+  box-shadow: 0 0 12px rgba(255,75,43,0.6);
+}
+/* Анимационные кнопки */
+.btn {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(90deg,#ff416c,#ff4b2b);
+  color: #fff;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.btn:hover { transform: scale(1.05); }
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.3);
+  transform: skewX(-20deg);
+}
+.btn.active::after {
+  animation: slide 0.7s forwards;
+}
+@keyframes slide {
+  from { left: -100%; }
+  to { left: 100%; }
+}
+/* Красивый выбор мин */
+select {
+  appearance: none;
+  background: rgba(255,255,255,0.08) url("data:image/svg+xml,%3Csvg fill='white' height='24' width='24' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 10px center;
+  background-size: 16px;
+}
+#message { margin-top: 12px; min-height: 20px; }
 </style>
 </head>
 <body>
-<div class="page">
-  <div class="container">
-    <section class="panel">
-      <h1>Лесенка</h1>
-      <p class="desc">Баланс стартовый — <strong>$100</strong>. Если баланс достигает 0 — он не восстанавливается.</p>
-      <div class="controls">
-        <div class="balance">
-          <div>
-            <div class="small">Баланс</div>
-            <div class="bal-amount" id="bal">$100.00</div>
-          </div>
-          <div style="margin-left:auto;text-align:right">
-            <div class="small">Статус</div>
-            <div id="status" class="small">active</div>
-          </div>
-        </div>
-        <div class="bet-wrap">
-          <input id="bet" class="bet-input" type="number" min="1" step="1" value="5" />
-          <button id="playBtn" class="btn primary">Играть</button>
-          <div class="controls-right">
-            <button id="exportBtn" class="export-btn">Экспорт</button>
-            <button id="importBtn" class="export-btn">Импорт</button>
-          </div>
-        </div>
-      </div>
-      <div class="ladder-wrap" id="ladderArea" style="height:520px">
-        <div class="marker" id="marker" style="transform:translateY(480px)">$</div>
-        <div class="ladder" id="ladder"></div>
-      </div>
-    </section>
-    <aside class="sidebar">
-      <div class="card">
-        <div><div style="font-weight:800">Лог раундов</div></div>
-        <div class="log" id="log"></div>
-      </div>
-    </aside>
+<div class="wrapper">
+  <div class="game-area" id="game"></div>
+  <div class="sidebar">
+    <h2>Баланс: $<span id="balance">100</span></h2>
+    <input type="number" id="bet" placeholder="Ставка" />
+    <label>Мины:</label>
+    <select id="mines">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+    </select>
+    <button class="btn" id="play">Играть</button>
+    <button class="btn" id="cashout" disabled>Забрать</button>
+    <input type="text" id="promo" placeholder="Промокод" />
+    <button class="btn" id="applyPromo">Активировать</button>
+    <div id="message"></div>
   </div>
 </div>
 
 <script>
-(() => {
-  const CONFIG = {
-    START_BALANCE: 100.00,
-    MAX_STEPS: 10,
-    MULTIPLIERS: [1.05,1.12,1.25,1.5,1.8,2.3,3.0,4.5,7.0,12.0],
-    CHANCES: [900000,800000,700000,600000,480000,320000,160000,80000,30000,8000],
-  };
+const gameArea = document.getElementById('game');
+const balanceEl = document.getElementById('balance');
+const betInput = document.getElementById('bet');
+const playBtn = document.getElementById('play');
+const cashoutBtn = document.getElementById('cashout');
+const messageEl = document.getElementById('message');
+const minesSelect = document.getElementById('mines');
+const promoInput = document.getElementById('promo');
+const promoBtn = document.getElementById('applyPromo');
 
-  const ladderEl = document.getElementById('ladder');
-  const balEl = document.getElementById('bal');
-  const statusEl = document.getElementById('status');
-  const betInput = document.getElementById('bet');
-  const playBtn = document.getElementById('playBtn');
-  const marker = document.getElementById('marker');
-  const logEl = document.getElementById('log');
-  const exportBtn = document.getElementById('exportBtn');
-  const importBtn = document.getElementById('importBtn');
+let balance = parseInt(localStorage.getItem('balance')) || 100;
+balanceEl.textContent = balance;
 
-  const STORAGE_KEY = 'ladder_state';
-  let state = { userId:null, balance:CONFIG.START_BALANCE, depleted:false, rounds:[], createdAt:Date.now() };
+let usedPromos = JSON.parse(localStorage.getItem('usedPromos')) || {};
+let bet = 0;
+let rows = 6;
+let cols = 4;
+let currentRow = 0;
+let gameActive = false;
+let minesCount = 1;
+let mineMap = [];
 
-  function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-  function loadState(){ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return false; try{state=JSON.parse(raw);return true;}catch{return false;} }
-  function resetToStart(){ state={ userId:'user_'+Math.random().toString(36).slice(2,9), balance:CONFIG.START_BALANCE, depleted:false, rounds:[], createdAt:Date.now()}; saveState(); }
+const promoCodes = {
+  "FREE50": 50,
+  "VIP100": 100,
+  "MAMEN200": 200
+};
 
-  if(!loadState()) resetToStart();
-  if(!state.userId) state.userId='user_'+Math.random().toString(36).slice(2,9);
-
-  function formatMoney(n){ return '$'+Number(n).toFixed(2); }
-  function nowStr(){ return new Date().toLocaleString(); }
-
-  function buildLadder(){
-    ladderEl.innerHTML='';
-    for(let i=CONFIG.MAX_STEPS;i>=1;--i){
-      const step=document.createElement('div');
-      step.className='step';
-      step.dataset.index=i;
-      const label=document.createElement('div');label.className='label';label.textContent='Шаг '+i;
-      const mult=document.createElement('div');mult.className='mult';mult.textContent=(CONFIG.MULTIPLIERS[i-1]||1)+'x';
-      step.appendChild(label);step.appendChild(mult);
-      ladderEl.appendChild(step);
+function createBoard() {
+  gameArea.innerHTML = '';
+  for (let r = 0; r < rows; r++) {
+    const row = document.createElement('div');
+    row.classList.add('row');
+    for (let c = 0; c < cols; c++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.dataset.row = r;
+      cell.dataset.col = c;
+      row.appendChild(cell);
     }
-    updateMarkerPosition(0,true);
+    gameArea.appendChild(row);
   }
-  buildLadder();
+}
 
-  function render(){
-    balEl.textContent=formatMoney(state.balance);
-    statusEl.textContent=state.depleted?'depleted':'active';
-    logEl.innerHTML=state.rounds.slice().reverse().map(r=>`<div style="margin-bottom:8px"><div style="font-weight:700">${r.title}</div><div class="muted">${r.time} — ставка ${formatMoney(r.bet)}, изменение ${r.change>=0?'+':''}${formatMoney(r.change)} — баланс ${formatMoney(r.balanceAfter)}</div></div>`).join('');
-  }
-
-  function updateMarkerPosition(stepIndex,immediate){
-    const steps=Array.from(ladderEl.children);let targetY;
-    if(stepIndex<=0){const ladderRect=ladderEl.getBoundingClientRect();targetY=ladderRect.height-44-8;}
-    else {const step=steps[CONFIG.MAX_STEPS-stepIndex];const rect=step.getBoundingClientRect();const parent=ladderEl.getBoundingClientRect();targetY=rect.top-parent.top+(rect.height-44)/2;}
-    if(immediate){marker.style.transition='none';marker.style.transform=`translateY(${targetY}px)`;requestAnimationFrame(()=>marker.style.transition='transform .65s cubic-bezier(.2,.9,.2,1)');}
-    else {marker.style.transform=`translateY(${targetY}px)`;}
-  }
-
-  async function playRound(bet){
-    if(state.depleted) return;
-    if(bet<=0||isNaN(bet)||bet>state.balance) return;
-    let passed=0;
-    for(let i=0;i<CONFIG.MAX_STEPS;i++){if(cryptoRandInt(1000000)<CONFIG.CHANCES[i]) passed=i+1; else break;}
-    const multiplier=passed>0?(CONFIG.MULTIPLIERS[passed-1]||1):0;
-    const payout=passed>0?bet*multiplier:0;
-    const change=payout-bet;
-    const newBalance=+(state.balance+change).toFixed(2);
-    const round={time:nowStr(),bet,passed,multiplier,payout:+payout.toFixed(2),change:+change.toFixed(2),balanceAfter:newBalance,title:passed>0?`Успех: ${passed} шаг(ов)`:'Поражение'};
-    state.balance=newBalance;state.rounds.push(round);
-    if(state.balance<=0.0001){state.depleted=true;state.balance=0;}
-    saveState();
-    await animateRun(passed);
-    render();
-  }
-
-  async function animateRun(passed){
-    playBtn.disabled=true;betInput.disabled=true;
-    const stepEls=Array.from(ladderEl.children);stepEls.forEach(s=>s.classList.remove('win','lose'));
-    let cur=0;updateMarkerPosition(0,false);await sleep(200);
-    let failedAt=null;
-    for(let i=1;i<=CONFIG.MAX_STEPS;i++){
-      const el=stepEls[CONFIG.MAX_STEPS-i];el.classList.add('hover');
-      updateMarkerPosition(i,false);await sleep(250);el.classList.remove('hover');
-      if(i<=passed){el.classList.add('win');el.animate([{transform:'scale(1)'},{transform:'scale(1.03)'},{transform:'scale(1)'}],{duration:260,easing:'cubic-bezier(.2,.9,.2,1)'});}
-      else {el.classList.add('lose');failedAt=i;break;}
+function generateMines() {
+  mineMap = [];
+  for (let r = 0; r < rows; r++) {
+    let minePositions = [];
+    while (minePositions.length < minesCount) {
+      let pos = Math.floor(Math.random() * cols);
+      if (!minePositions.includes(pos)) minePositions.push(pos);
     }
-    updateMarkerPosition(passed,false);await sleep(240);
-    playBtn.disabled=!!state.depleted;betInput.disabled=!!state.depleted;
+    mineMap.push(minePositions);
   }
+}
 
-  function sleep(ms){return new Promise(res=>setTimeout(res,ms));}
-  function cryptoRandInt(max){const r=crypto.getRandomValues(new Uint32Array(1))[0]&0x7fffffff;return r%max;}
+function startGame() {
+  animateBtn(playBtn);
 
-  playBtn.addEventListener('click',()=>{const bet=+Number(betInput.value||0);playRound(bet);});
-  exportBtn.addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ladder-'+(state.userId||'user')+'.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);});
-  importBtn.addEventListener('click',()=>{const input=document.createElement('input');input.type='file';input.accept='application/json';input.onchange=async e=>{const f=e.target.files[0];if(!f) return;try{const txt=await f.text();const parsed=JSON.parse(txt);if(typeof parsed.balance!=='number'||!Array.isArray(parsed.rounds)){alert('Файл невалиден');return;}state=parsed;if(!state.userId)state.userId='user_'+Math.random().toString(36).slice(2,9);saveState();render();}catch(err){alert('Ошибка импорта: '+err.message);}};input.click();});
-  render();
-})();
+  bet = parseInt(betInput.value);
+  if (!bet || bet <= 0 || bet > balance) {
+    messageEl.textContent = 'Неверная ставка';
+    return;
+  }
+  balance -= bet;
+  balanceEl.textContent = balance;
+  localStorage.setItem('balance', balance);
+
+  minesCount = parseInt(minesSelect.value);
+  currentRow = 0;
+  gameActive = true;
+  playBtn.disabled = true;
+  cashoutBtn.disabled = false;
+  messageEl.textContent = '';
+  createBoard();
+  generateMines();
+  activateRow();
+}
+
+function activateRow() {
+  const row = document.querySelectorAll('.row')[currentRow];
+  row.querySelectorAll('.cell').forEach(cell => {
+    cell.onclick = () => chooseCell(cell);
+  });
+}
+
+function chooseCell(cell) {
+  if (!gameActive) return;
+  const r = parseInt(cell.dataset.row);
+  const c = parseInt(cell.dataset.col);
+
+  if (mineMap[r].includes(c)) {
+    cell.classList.add('mine');
+    showExplosion(cell);
+    revealMines(r);
+    endGame(false);
+  } else {
+    cell.classList.add('win');
+    currentRow++;
+    if (currentRow >= rows) {
+      endGame(true);
+    } else {
+      activateRow();
+    }
+  }
+}
+
+function showExplosion(cell) {
+  const explosion = document.createElement('div');
+  explosion.classList.add('explosion');
+  cell.appendChild(explosion);
+  setTimeout(() => explosion.remove(), 800);
+}
+
+function revealMines(row) {
+  const cells = document.querySelectorAll(`.row:nth-child(${row+1}) .cell`);
+  cells.forEach((cell, idx) => {
+    if (mineMap[row].includes(idx) && !cell.classList.contains('mine')) {
+      cell.classList.add('mine');
+    }
+  });
+}
+
+function endGame(win) {
+  gameActive = false;
+  playBtn.disabled = false;
+  cashoutBtn.disabled = true;
+  if (win) {
+    let multiplier = 1 + (currentRow * minesCount * 0.5);
+    let winAmount = Math.floor(bet * multiplier);
+    balance += winAmount;
+    messageEl.textContent = `Ты выиграл $${winAmount}`;
+  } else {
+    messageEl.textContent = 'Проигрыш';
+  }
+  balanceEl.textContent = balance;
+  localStorage.setItem('balance', balance);
+}
+
+cashoutBtn.addEventListener('click', () => {
+  if (!gameActive) return;
+  animateBtn(cashoutBtn);
+  let multiplier = 1 + (currentRow * minesCount * 0.5);
+  let winAmount = Math.floor(bet * multiplier);
+  balance += winAmount;
+  messageEl.textContent = `Забрано $${winAmount}`;
+  balanceEl.textContent = balance;
+  localStorage.setItem('balance', balance);
+  gameActive = false;
+  playBtn.disabled = false;
+  cashoutBtn.disabled = true;
+});
+
+playBtn.addEventListener('click', startGame);
+
+promoBtn.addEventListener('click', () => {
+  animateBtn(promoBtn);
+  const code = promoInput.value.trim().toUpperCase();
+  if (promoCodes[code]) {
+    if (usedPromos[code]) {
+      messageEl.textContent = 'Промокод уже использован';
+    } else {
+      balance += promoCodes[code];
+      usedPromos[code] = true;
+      localStorage.setItem('balance', balance);
+      localStorage.setItem('usedPromos', JSON.stringify(usedPromos));
+      balanceEl.textContent = balance;
+      messageEl.textContent = `Промокод ${code} активирован: +$${promoCodes[code]}`;
+    }
+  } else {
+    messageEl.textContent = 'Неверный промокод';
+  }
+});
+
+function animateBtn(btn) {
+  btn.classList.add("active");
+  setTimeout(() => btn.classList.remove("active"), 700);
+}
+
+createBoard();
 </script>
 </body>
 </html>
-
