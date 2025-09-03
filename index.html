@@ -1,576 +1,560 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Сапёр 1win с сохранением и админ-консолью</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Лесенка — Прототип (визуал)</title>
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
-  body {
-    margin: 0; padding: 0;
-    background: #121b2f;
-    color: #cbd5e1;
-    font-family: 'Orbitron', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    user-select: none;
+  :root{
+    --bg:#071026;
+    --card:#0b1220;
+    --accent1:#7c3aed;
+    --accent2:#f97316;
+    --glass: rgba(255,255,255,0.04);
+    --muted: rgba(226,238,248,0.62);
+    --radius:18px;
+    --soft: cubic-bezier(.2,.9,.25,1);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color-scheme: dark;
   }
-  #balance {
-    margin: 20px 0;
-    font-size: 1.8rem;
-    color: #60a5fa;
-    text-shadow: 0 0 6px #2563eb;
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:
+    radial-gradient(800px 400px at 10% 20%, rgba(124,58,237,0.08), transparent),
+    radial-gradient(600px 300px at 90% 80%, rgba(249,115,22,0.05), transparent),
+    var(--bg);
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   }
-  #levelInfo {
-    margin-bottom: 12px;
-    font-size: 1.5rem;
-    color: #a5b4fc;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    user-select: none;
+  .page{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:36px;
   }
-  #multiplier {
-    font-weight: 900;
-    font-size: 1.8rem;
-    color: #facc15;
-    text-shadow: 0 0 6px #eab308;
-  }
-  #arrow {
-    width: 20px;
-    height: 20px;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-bottom: 10px solid #facc15;
-    animation: bounce 1.2s infinite;
-  }
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-  }
-  #betContainer {
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-  #betInput {
-    font-size: 1.3rem;
-    padding: 10px 14px;
-    border-radius: 12px;
-    border: none;
-    width: 160px;
-    text-align: center;
-    font-weight: 700;
-    box-shadow: 0 0 15px #2563eb;
-    color: #121b2f;
-    user-select: text;
-  }
-  #startBtn, #takeBtn, #withdrawBtn {
-    background: #10b981;
-    border: none;
-    color: white;
-    font-weight: 700;
-    font-size: 1.4rem;
-    padding: 12px 40px;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 0 15px #10b981;
-    transition: background 0.3s, opacity 1s ease;
-  }
-  #startBtn:disabled {
-    background: #065f46;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-  #startBtn:hover:not(:disabled), #takeBtn:hover, #withdrawBtn:hover {
-    background: #059669;
-    box-shadow: 0 0 25px #059669;
-  }
-  #takeBtn.hidden, #startBtn.hidden, #betContainer.hidden, #withdrawBtn.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-  #board {
-    display: grid;
-    grid-template-columns: repeat(3, 60px);
-    grid-template-rows: repeat(10, 60px);
-    gap: 8px;
-    background: #1e293b;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 0 20px #2563eb;
-    position: relative;
-    user-select: none;
-    margin-bottom: 20px;
-  }
-  .cell {
-    width: 60px;
-    height: 60px;
-    background: #334155;
-    border-radius: 10px;
-    box-shadow:
-      inset 0 2px 5px rgba(255,255,255,0.15),
-      0 2px 8px rgba(0,0,0,0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2.2rem;
-    font-weight: 900;
-    color: transparent;
-    cursor: pointer;
-    position: relative;
-    transition: background 0.3s, color 0.3s;
-  }
-  .cell:hover:not(.opened):not(.disabled) {
-    background: #3b82f6;
-    box-shadow: 0 0 12px #3b82f6;
-  }
-  .cell.opened {
-    background: #e0e7ff;
-    color: #1e293b;
-    cursor: default;
-    box-shadow: inset 0 0 14px #2563eb;
-  }
-  .cell.mine {
-    background: #dc2626;
-    color: #fef3f3;
-    box-shadow: 0 0 20px #dc2626;
-    animation: pulseRed 1.2s infinite alternate;
-  }
-  @keyframes pulseRed {
-    0% { box-shadow: 0 0 15px #dc2626; }
-    100% { box-shadow: 0 0 25px #f87171; }
-  }
-  @keyframes greenGlow {
-    0% {
-      background-color: #e0e7ff;
-      box-shadow: inset 0 0 5px #22c55e;
-      color: #166534;
-    }
-    50% {
-      background-color: #d1fae5;
-      box-shadow: inset 0 0 20px #22c55e;
-      color: #14532d;
-    }
-    100% {
-      background-color: #e0e7ff;
-      box-shadow: inset 0 0 5px #22c55e;
-      color: #166534;
-    }
-  }
-  .cell.correct {
-    animation: greenGlow 2s ease-in-out infinite;
-  }
-  #message {
-    font-size: 2rem;
-    font-weight: 900;
-    min-height: 36px;
-    color: #ef4444;
-    text-shadow: 0 0 15px #dc2626;
-    margin-bottom: 10px;
-    opacity: 1;
-    transition: opacity 1.5s ease;
-  }
-  #message.hidden {
-    opacity: 0;
+  .container{
+    width:1060px;max-width:96%;display:grid;grid-template-columns:1fr 420px;gap:28px;
   }
 
-  /* Админ-консоль */
-  #adminConsole {
-    position: fixed;
-    bottom: 0;
-    left: 0; right: 0;
-    background: #222;
-    color: #0f0;
-    font-family: monospace;
-    max-height: 150px;
-    overflow-y: auto;
-    padding: 8px;
-    display: none;
-    z-index: 9999;
+  /* Left: Game area */
+  .panel{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid var(--glass);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;
+    box-shadow:0 10px 40px rgba(12,20,40,0.6);
   }
-  #consoleOutput {
-    height: 110px;
-    overflow-y: auto;
-    white-space: pre-wrap;
+  h1{margin:0 0 6px 0;font-size:20px;color:#e6eef8}
+  p.desc{margin:0 0 14px 0;color:var(--muted);font-size:13px}
+
+  /* Controls */
+  .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px}
+  .balance{
+    background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.04);padding:12px 16px;border-radius:12px;display:flex;align-items:center;gap:12px;
+    min-width:220px;
   }
-  #consoleInput {
-    width: 100%;
-    background: #000;
-    color: #0f0;
-    border: none;
-    padding: 6px;
-    font-family: monospace;
+  .bal-amount{font-weight:700;font-size:18px}
+  .small{font-size:12px;color:var(--muted)}
+
+  .bet-wrap{display:flex;gap:8px;align-items:center}
+  .bet-input{width:120px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;font-weight:600}
+  .btn{
+    padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;font-weight:700;cursor:pointer;
+    transition:transform .12s var(--soft), box-shadow .12s var(--soft), background .12s var(--soft);
+  }
+  .btn:active{transform:translateY(2px)}
+  .btn.primary{background:linear-gradient(90deg,var(--accent1),#06b6d4);color:#011028;border:none;box-shadow:0 14px 40px rgba(124,58,237,0.16)}
+
+  /* Ladder */
+  .ladder-wrap{display:flex;justify-content:center;align-items:flex-end;position:relative;padding:18px 8px 4px 8px;}
+  .ladder{display:flex;flex-direction:column-reverse;gap:8px;width:620px;max-width:100%}
+  .step{
+    height:56px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.008));
+    border:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:space-between;padding:12px 20px;
+    transition:transform .45s var(--soft), box-shadow .35s var(--soft), background .35s var(--soft);
+    position:relative;overflow:hidden;
+  }
+  .step .label{font-weight:700}
+  .step .mult{font-weight:700;color:var(--muted)}
+  .step.hover{transform:translateY(-8px) scale(1.01);border-color:rgba(255,255,255,0.08)}
+  .step.win{background:linear-gradient(90deg, rgba(124,58,237,0.12), rgba(6,182,212,0.06));box-shadow:0 18px 60px rgba(124,58,237,0.12)}
+  .step.lose{background:linear-gradient(90deg, rgba(244,63,94,0.10), rgba(249,115,22,0.04));box-shadow:0 18px 60px rgba(244,63,94,0.10)}
+
+  /* Player marker */
+  .marker{
+    position:absolute;left:18px;top:0;width:44px;height:44px;border-radius:10px;background:linear-gradient(180deg,#fff,#e6eef8);display:flex;align-items:center;justify-content:center;font-weight:800;color:#031026;
+    transform:translateY(0);transition:transform .65s cubic-bezier(.2,.9,.2,1);
+    box-shadow:0 14px 40px rgba(2,6,23,0.6);
+  }
+
+  /* Right: preview / logs */
+  .sidebar{display:flex;flex-direction:column;gap:14px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);padding:16px;border-radius:12px;min-height:120px}
+  .log{max-height:240px;overflow:auto;font-size:13px;color:var(--muted);padding-right:6px}
+
+  /* result overlay */
+  .overlay{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(0deg, rgba(2,6,23,0.55), rgba(2,6,23,0.45));opacity:0;pointer-events:none;transition:opacity .28s;
+  }
+  .overlay.show{opacity:1;pointer-events:auto}
+  .result-box{width:540px;max-width:95%;padding:22px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.06);text-align:center}
+  .result-title{font-size:22px;font-weight:800;margin-bottom:8px}
+  .result-sub{color:var(--muted);margin-bottom:12px}
+
+  /* small helpers */
+  .muted{color:var(--muted);font-size:13px}
+  .controls-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .export-btn{background:transparent;border:1px dashed rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;font-size:13px}
+  .fatal{color:#ffb4b4}
+  footer{margin-top:12px;color:var(--muted);font-size:12px;text-align:center}
+  @media (max-width:1000px){
+    .container{grid-template-columns:1fr;align-items:start}
+    .ladder{width:100%}
+    .marker{left:8px}
   }
 </style>
 </head>
 <body>
+<div class="page">
+  <div class="container">
+    <section class="panel" aria-labelledby="title">
+      <h1 id="title">Лесенка — визуальный прототип</h1>
+      <p class="desc">Интерфейс и анимации. Баланс стартовый — <strong>$100</strong>. Если баланс достигает 0 — помечается как «depleted» и не восстанавливается в этом прототипе без экспорта/импорта аккаунта.</p>
 
-  <div id="balance">Баланс: $0</div>
+      <div class="controls">
+        <div class="balance" title="Баланс">
+          <div>
+            <div class="small">Баланс</div>
+            <div class="bal-amount" id="bal">$100.00</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div class="small">Статус</div>
+            <div id="status" class="small">active</div>
+          </div>
+        </div>
 
-  <div id="levelInfo" style="display:none;">
-    <div>Уровень: <span id="level">1</span></div>
-    <div id="arrow"></div>
-    <div>Множитель: <span id="multiplier">x2</span></div>
+        <div class="bet-wrap">
+          <input id="bet" class="bet-input" type="number" min="1" step="1" value="5" />
+          <button id="playBtn" class="btn primary">Играть</button>
+          <div class="controls-right">
+            <button id="exportBtn" class="export-btn">Экспорт</button>
+            <button id="importBtn" class="export-btn">Импорт</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ladder-wrap" id="ladderArea" style="height:520px">
+        <div class="marker" id="marker" style="transform:translateY(480px)">$</div>
+        <div class="ladder" id="ladder"></div>
+        <!-- overlay result -->
+        <div class="overlay" id="overlay">
+          <div class="result-box" id="resultBox">
+            <div class="result-title" id="resultTitle">Результат</div>
+            <div class="result-sub" id="resultSub">...</div>
+            <div><button id="closeRes" class="btn">Продолжить</button></div>
+          </div>
+        </div>
+      </div>
+
+      <footer>Прототип — визуал. Для настоящей сохранности нужна серверная реализация и привязка аккаунта/кошелька.</footer>
+    </section>
+
+    <aside class="sidebar">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-weight:800">Текущий раунд</div>
+            <div class="muted" id="roundInfo">-</div>
+          </div>
+          <div style="text-align:right">
+            <div class="muted">Макс шагов</div>
+            <div style="font-weight:800" id="maxSteps">10</div>
+          </div>
+        </div>
+        <div style="margin-top:12px" id="seedHash" class="muted">seed: —</div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:800;margin-bottom:8px">Лог раундов</div>
+        <div class="log" id="log"></div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:800;margin-bottom:8px">Управление (визуал)</div>
+        <div class="muted">Экспорт позволяет сохранить \"аккаунт\" (JSON). Импорт восстанавливает сохранённое состояние — это эмуляция серверного хранения.</div>
+      </div>
+    </aside>
   </div>
-
-  <div id="betContainer">
-    <input id="betInput" type="number" min="1" max="1000000" step="1" placeholder="Введите ставку (USD)" />
-    <button id="startBtn" disabled>Начать</button>
-  </div>
-
-  <div id="board" aria-label="Игровое поле сапёра" role="grid" style="display:none;"></div>
-
-  <button id="takeBtn" class="hidden">Забрать</button>
-  <button id="withdrawBtn" class="hidden">Вывод 100000</button>
-
-  <div id="message" class="hidden" role="alert"></div>
-
-  <!-- Админ-консоль -->
-  <div id="adminConsole">
-    <div id="consoleOutput"></div>
-    <input id="consoleInput" placeholder="Введите команду..."/>
-  </div>
+</div>
 
 <script>
-  const GAME_VERSION = '1.0.1';
+/*
+  Прототип — визуал. Логика эмулирует:
+  - стартовый баланс $100 (единоразово при первом запуске)
+  - раунд: ставка -> RNG -> достижение N шагов -> выплата
+  - если баланс <= 0: помечается depleted и не восстанавливается автоматически
+  - state хранится в localStorage как 'ladder_prot_state' (эмуляция сервера)
+  - есть экспорт/импорт аккаунта (json-файл) — это единственный способ восстановить состояние после удаления localStorage
+*/
 
-  const ROWS = 10;
-  const COLS = 3;
-
-  let balance = 0;
-  let bet = null;
-  let board = [];
-  let minePositions = [];
-  let openedCount = 0;
-  let gameOver = false;
-  let sessionEarned = 0;
-  let level = 1;
-
-  const balanceEl = document.getElementById('balance');
-  const betInput = document.getElementById('betInput');
-  const startBtn = document.getElementById('startBtn');
-  const boardEl = document.getElementById('board');
-  const takeBtn = document.getElementById('takeBtn');
-  const withdrawBtn = document.getElementById('withdrawBtn');
-  const messageEl = document.getElementById('message');
-  const betContainer = document.getElementById('betContainer');
-  const levelInfo = document.getElementById('levelInfo');
-  const levelEl = document.getElementById('level');
-  const multiplierEl = document.getElementById('multiplier');
-  const arrowEl = document.getElementById('arrow');
-
-  // Админ-консоль
-  const adminConsole = document.getElementById('adminConsole');
-  const consoleInput = document.getElementById('consoleInput');
-  const consoleOutput = document.getElementById('consoleOutput');
-
-  // Промо-токены и их значения
-  const tokens = {
-    'TOKEN1000': 1000,
-    'TOKEN5000': 5000,
-    'TOKEN10000': 10000,
+(() => {
+  // --- Конфигурация игры ---
+  const CONFIG = {
+    START_BALANCE: 100.00,
+    MAX_STEPS: 10,
+    // multipliers for steps 1..MAX_STEPS (progressive)
+    MULTIPLIERS: [1.05,1.12,1.25,1.5,1.8,2.3,3.0,4.5,7.0,12.0],
+    // win chance at each step (for visual): higher steps = lower chance
+    CHANCES: [900000,800000,700000,600000,480000,320000,160000,80000,30000,8000], // out of 1_000_000
   };
 
-  function formatUSD(amount) {
-    return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
+  // --- Elements ---
+  const ladderEl = document.getElementById('ladder');
+  const balEl = document.getElementById('bal');
+  const statusEl = document.getElementById('status');
+  const betInput = document.getElementById('bet');
+  const playBtn = document.getElementById('playBtn');
+  const marker = document.getElementById('marker');
+  const overlay = document.getElementById('overlay');
+  const resultTitle = document.getElementById('resultTitle');
+  const resultSub = document.getElementById('resultSub');
+  const closeRes = document.getElementById('closeRes');
+  const logEl = document.getElementById('log');
+  const roundInfo = document.getElementById('roundInfo');
+  const seedHash = document.getElementById('seedHash');
+  const exportBtn = document.getElementById('exportBtn');
+  const importBtn = document.getElementById('importBtn');
+  const maxStepsEl = document.getElementById('maxSteps');
+
+  maxStepsEl.textContent = CONFIG.MAX_STEPS;
+
+  // --- State (emulated server) ---
+  const STORAGE_KEY = 'ladder_prot_state_v1';
+  let state = {
+    userId: null,
+    balance: CONFIG.START_BALANCE,
+    depleted: false,
+    rounds: [], // log of rounds
+    createdAt: Date.now(),
+  };
+
+  // --- Utility ---
+  function formatMoney(n){
+    return '$' + Number(n).toFixed(2);
+  }
+  function nowStr(){ return new Date().toLocaleString(); }
+  function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadState(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    try{
+      state = JSON.parse(raw);
+      // sanity fix
+      if(typeof state.balance !== 'number') state.balance = CONFIG.START_BALANCE;
+      return true;
+    }catch(e){ return false; }
   }
 
-  function updateBalance() {
-    balanceEl.textContent = `Баланс: ${formatUSD(balance + sessionEarned)}`;
+  function resetToStart(){
+    state = {
+      userId: 'visual_user_'+Math.random().toString(36).slice(2,9),
+      balance: CONFIG.START_BALANCE,
+      depleted: false,
+      rounds: [],
+      createdAt: Date.now(),
+    };
+    saveState();
   }
 
-  function saveBalance() {
-    localStorage.setItem('mines_balance_usd', balance.toString());
-    localStorage.setItem('mines_game_version', GAME_VERSION);
+  // --- init ---
+  if(!loadState()){
+    resetToStart();
   }
+  if(!state.userId) state.userId = 'visual_user_'+Math.random().toString(36).slice(2,9);
+  saveState();
 
-  function loadBalance() {
-    const savedVersion = localStorage.getItem('mines_game_version');
-    if(savedVersion !== GAME_VERSION) {
-      balance = 100;
-      localStorage.setItem('mines_game_version', GAME_VERSION);
-      localStorage.setItem('mines_balance_usd', balance.toString());
+  // Build ladder UI
+  function buildLadder(){
+    ladderEl.innerHTML = '';
+    for(let i=CONFIG.MAX_STEPS; i>=1; --i){
+      const step = document.createElement('div');
+      step.className = 'step';
+      step.dataset.index = i;
+      const label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = 'Шаг ' + i;
+      const mult = document.createElement('div');
+      mult.className = 'mult';
+      const m = CONFIG.MULTIPLIERS[i-1] || 1;
+      mult.textContent = m + 'x';
+      step.appendChild(label);
+      step.appendChild(mult);
+      ladderEl.appendChild(step);
+
+      // hover visual
+      step.addEventListener('mouseenter', ()=> step.classList.add('hover'));
+      step.addEventListener('mouseleave', ()=> step.classList.remove('hover'));
+    }
+    // position marker at bottom (off ladder)
+    updateMarkerPosition(0, true);
+  }
+  buildLadder();
+
+  // --- UI updates ---
+  function render(){
+    balEl.textContent = formatMoney(state.balance);
+    statusEl.textContent = state.depleted ? 'depleted' : 'active';
+    roundInfo.textContent = `Раундов: ${state.rounds.length}`;
+    // log
+    logEl.innerHTML = state.rounds.slice().reverse().map(r => {
+      return `<div style="margin-bottom:8px"><div style="font-weight:700">${r.resultTitle}</div><div class="muted">${r.time} — ставка ${formatMoney(r.bet)}, изменение ${r.change >=0 ? '+' : ''}${formatMoney(r.change)} — баланс ${formatMoney(r.balanceAfter)}</div></div>`;
+    }).join('');
+  }
+  render();
+
+  // --- Marker animation helper ---
+  function updateMarkerPosition(stepIndex, immediate){
+    // stepIndex = 0 (below first), 1..MAX_STEPS
+    // compute Y by locating step element
+    const steps = Array.from(ladderEl.children);
+    let targetY;
+    if(stepIndex <= 0){
+      // below the first: place near bottom of ladder container
+      const ladderRect = ladderEl.getBoundingClientRect();
+      targetY = ladderRect.height - 44 - 8; // marker height
     } else {
-      const saved = localStorage.getItem('mines_balance_usd');
-      if(saved !== null) {
-        const val = parseInt(saved, 10);
-        if(!isNaN(val) && val >= 100) {
-          balance = val;
-        } else {
-          balance = 100;
-        }
-      } else {
-        balance = 100;
+      const step = steps[CONFIG.MAX_STEPS - stepIndex]; // because ladder is reversed
+      if(!step) { targetY = ladderEl.getBoundingClientRect().height - 44 - 8; }
+      else {
+        const rect = step.getBoundingClientRect();
+        const parent = ladderEl.getBoundingClientRect();
+        // marker top relative to ladder
+        targetY = rect.top - parent.top + (rect.height - 44)/2;
       }
     }
-    updateBalance();
-    logToConsole(`Версия игры: ${GAME_VERSION}`);
-  }
-
-  function updateLevelUI() {
-    levelEl.textContent = level;
-    const multiplier = level + 1;  // Множитель: x2, x3, x4...
-    multiplierEl.textContent = `x${multiplier}`;
-    arrowEl.style.transform = `translateY(${(level - 1) * 68}px)`;
-  }
-
-  function checkWin() {
-    if(openedCount === ROWS * COLS - ROWS) {
-      gameOver = true;
-      messageEl.textContent = `Вы выиграли! Выигрыш: ${formatUSD(sessionEarned)}`;
-      messageEl.style.color = '#60a5fa';
-      messageEl.style.textShadow = '0 0 12px #2563eb';
-      messageEl.classList.remove('hidden');
-      takeBtn.classList.remove('hidden');
-      boardEl.style.pointerEvents = 'none';
+    // set transform
+    if(immediate){
+      marker.style.transition = 'none';
+      marker.style.transform = `translateY(${targetY}px)`;
+      requestAnimationFrame(()=> marker.style.transition = 'transform .65s cubic-bezier(.2,.9,.2,1)');
+    } else {
+      marker.style.transform = `translateY(${targetY}px)`;
     }
   }
 
-  function createBoard() {
-    boardEl.innerHTML = '';
-    board = [];
-    minePositions = [];
-
-    const mustLose = bet >= balance * 0.7; // Слив, если ставка >= 70% баланса
-
-    for(let r=0; r<ROWS; r++) {
-      board[r] = [];
-      let mineCol = Math.floor(Math.random() * COLS);
-      minePositions[r] = mineCol;
-
-      for(let c=0; c<COLS; c++) {
-        const cell = {
-          row: r,
-          col: c,
-          mine: c === mineCol,
-          opened: false,
-          element: document.createElement('div'),
-        };
-        cell.element.classList.add('cell');
-        cell.element.dataset.row = r;
-        cell.element.dataset.col = c;
-
-        cell.element.addEventListener('click', () => {
-          if(!gameOver) openCell(r, c);
-        });
-
-        boardEl.appendChild(cell.element);
-        board[r][c] = cell;
-      }
+  // --- Core play flow (emulated server) ---
+  function playRound(bet){
+    if(state.depleted) {
+      showResult('Баланс исчерпан', 'Нельзя играть. Экспортируй свой аккаунт если хочешь сохранить историю.', true);
+      return;
     }
-
-    if(!mustLose) {
-      for(let c=0; c<COLS; c++) {
-        board[0][c].mine = false;
-        board[0][c].element.classList.remove('mine');
-        board[0][c].element.textContent = '';
-      }
-      const lastRow = ROWS - 1;
-      const lastMineCol = Math.floor(Math.random() * COLS);
-      minePositions[lastRow] = lastMineCol;
-      board[lastRow][lastMineCol].mine = true;
+    if(bet <= 0 || isNaN(bet)) {
+      showResult('Ошибка ставки', 'Введите корректную ставку.', true);
+      return;
     }
-  }
-
-  function openCell(r, c) {
-    if(r !== level - 1) return;
-    const cell = board[r][c];
-    if(cell.opened) return;
-    cell.opened = true;
-    openedCount++;
-    cell.element.classList.add('opened');
-
-    if(cell.mine) {
-      cell.element.classList.add('mine');
-      cell.element.textContent = '💣';
-      loseGame();
+    if(bet > state.balance){
+      showResult('Недостаточно средств', `Ваш баланс ${formatMoney(state.balance)} — ставка ${formatMoney(bet)} недоступна.`, true);
       return;
     }
 
-    cell.element.classList.add('correct');
-    level++;
-    updateLevelUI();
+    // Emulate server precommit: generate server_seed and show its hash (visual)
+    const server_seed = cryptoHex(16);
+    const seed_hash = sha256(server_seed);
+    seedHash.textContent = 'seed hash: ' + seed_hash.slice(0,22) + '…';
 
-    const multiplier = level + 1;
-    sessionEarned = bet * multiplier;
-    updateBalance();
+    // Build round record
+    const round = { time: nowStr(), bet, server_seed, seed_hash };
 
-    messageEl.classList.add('hidden');
-    takeBtn.classList.remove('hidden');
-
-    checkWin();
-  }
-
-  function loseGame() {
-    gameOver = true;
-    sessionEarned = 0;
-
-    saveBalance();
-
-    messageEl.textContent = 'Жаль...';
-    messageEl.style.color = '#ef4444';
-    messageEl.style.textShadow = '0 0 15px #dc2626';
-    messageEl.classList.remove('hidden');
-    takeBtn.classList.add('hidden');
-    boardEl.style.pointerEvents = 'none';
-
-    setTimeout(() => {
-      resetGame();
-    }, 2500);
-  }
-
-  function resetGame() {
-    gameOver = false;
-    openedCount = 0;
-    sessionEarned = 0;
-    level = 1;
-
-    betInput.value = '';
-    betInput.disabled = false;
-    startBtn.disabled = true;
-    startBtn.classList.remove('hidden');
-    takeBtn.classList.add('hidden');
-    messageEl.classList.add('hidden');
-    boardEl.style.pointerEvents = 'auto';
-    boardEl.style.display = 'none';
-    betContainer.classList.remove('hidden');
-    levelInfo.style.display = 'none';
-    updateBalance();
-  }
-
-  function startGame() {
-    bet = parseInt(betInput.value, 10);
-    if(isNaN(bet) || bet < 1 || bet > balance) {
-      alert('Введите корректную ставку, не превышающую баланс');
-      return;
+    // Determine how many steps player will pass.
+    // We'll simulate sequential checks: each step has a chance (CHANCES with denominator 1_000_000).
+    // The process animates marker moving up step-by-step; stop at failure or at MAX_STEPS.
+    const rngBytes = cryptoRandInt(0x7fffffff);
+    // simulate sequentially
+    let passed = 0;
+    for(let i=0;i<CONFIG.MAX_STEPS;i++){
+      const chance = CONFIG.CHANCES[i] || 100000; // fallback
+      const r = cryptoRandInt(1000000);
+      if(r < chance) passed = i+1;
+      else break;
     }
-    balance -= bet;
-    saveBalance();
-    updateBalance();
 
-    createBoard();
-    boardEl.style.display = 'grid';
+    // payout calculation: multiplier at passed-1, payout = bet * multiplier if passed>0 else 0
+    const multiplier = passed > 0 ? (CONFIG.MULTIPLIERS[passed-1] || 1) : 0;
+    const payout = passed > 0 ? bet * multiplier : 0;
+    const change = payout - bet;
+    const newBalance = +(state.balance + change).toFixed(2);
+
+    // Save round to state (atomic emulation)
+    round.passed = passed;
+    round.multiplier = multiplier;
+    round.payout = +payout.toFixed(2);
+    round.change = +change.toFixed(2);
+    round.balanceAfter = newBalance;
+    state.balance = newBalance;
+    state.rounds.push(round);
+    if(state.balance <= 0.0001){
+      state.depleted = true;
+      state.balance = 0;
+    }
+    saveState();
+
+    // Now animate: move marker step by step with small delays
+    animateRun(passed, round);
+  }
+
+  // --- Animation for run ---
+  async function animateRun(passed, round){
+    playBtn.disabled = true;
     betInput.disabled = true;
-    startBtn.disabled = true;
-    betContainer.classList.add('hidden');
-    levelInfo.style.display = 'flex';
-    updateLevelUI();
-    messageEl.classList.add('hidden');
-    takeBtn.classList.add('hidden');
-  }
 
-  function takeWin() {
-    balance += sessionEarned;
-    sessionEarned = 0;
-    saveBalance();
-    updateBalance();
+    const stepsCount = CONFIG.MAX_STEPS;
+    // reset visuals
+    const stepEls = Array.from(ladderEl.children);
+    stepEls.forEach(s => { s.classList.remove('win','lose'); });
 
-    messageEl.textContent = 'Успешно забрано!';
-    messageEl.style.color = '#22c55e';
-    messageEl.style.textShadow = '0 0 20px #22c55e';
-    messageEl.classList.remove('hidden');
+    // start from 0 -> animate through steps until passed or failed
+    let cur = 0;
+    updateMarkerPosition(0, false);
+    await sleep(220);
 
-    takeBtn.classList.add('hidden');
-    boardEl.style.pointerEvents = 'none';
+    // animate passing steps sequentially
+    let failedAt = null;
+    for(let i=1;i<=stepsCount;i++){
+      // highlight step
+      const el = stepEls[stepsCount - i];
+      el.classList.add('hover');
+      updateMarkerPosition(i, false);
+      await sleep(280);
 
-    setTimeout(() => {
-      messageEl.classList.add('hidden');
-      resetGame();
-    }, 2500);
-  }
+      el.classList.remove('hover');
 
-  // Валидация ставки
-  betInput.addEventListener('input', () => {
-    const val = parseInt(betInput.value, 10);
-    if(val >=1 && val <= balance) {
-      startBtn.disabled = false;
+      if(i <= passed){
+        // win this step
+        el.classList.add('win');
+        // small pop
+        el.animate([{transform:'scale(1)'},{transform:'scale(1.03)'},{transform:'scale(1)'}],{duration:260,easing:'cubic-bezier(.2,.9,.2,1)'});
+        await sleep(180);
+      } else {
+        // failure at this step
+        el.classList.add('lose');
+        failedAt = i;
+        // bounce marker a bit to show fail
+        marker.animate([{transform: marker.style.transform},{transform: marker.style.transform + ' translateY(-8px)'},{transform:marker.style.transform}],{duration:520,easing:'cubic-bezier(.2,.9,.2,1)'});
+        break;
+      }
+    }
+
+    // final settle position: if passed>0 -> at passed, else stay at 0 (below)
+    updateMarkerPosition(passed, false);
+    await sleep(240);
+
+    // Show overlay result
+    if(passed > 0){
+      showResult('Вы прошли ' + passed + ' шаг' + plural(passed), `Выигрыш: ${formatMoney(round.payout)} (x${round.multiplier})`, false);
     } else {
-      startBtn.disabled = true;
+      showResult('Вы проиграли', `Ставка: ${formatMoney(round.bet)} списана. Баланс: ${formatMoney(round.balanceAfter)}`, false);
+    }
+
+    // re-enable controls (if not depleted)
+    playBtn.disabled = !!state.depleted;
+    betInput.disabled = !!state.depleted;
+    render();
+  }
+
+  // --- Overlay result control ---
+  function showResult(title, sub, isError){
+    resultTitle.textContent = title;
+    resultSub.textContent = sub;
+    if(isError) resultTitle.classList.add('fatal'); else resultTitle.classList.remove('fatal');
+    overlay.classList.add('show');
+  }
+  closeRes.addEventListener('click', ()=>{ overlay.classList.remove('show'); });
+
+  // --- Event handlers ---
+  playBtn.addEventListener('click', ()=> {
+    const bet = +Number(betInput.value || 0);
+    playRound(bet);
+  });
+
+  // Export / Import account (JSON)
+  exportBtn.addEventListener('click', ()=> {
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'ladder-account-' + (state.userId||'user') + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  importBtn.addEventListener('click', ()=> {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = 'application/json';
+    input.onchange = async (e) => {
+      const f = e.target.files[0];
+      if(!f) return;
+      try {
+        const txt = await f.text();
+        const parsed = JSON.parse(txt);
+        // basic validation
+        if(typeof parsed.balance !== 'number' || !Array.isArray(parsed.rounds)) {
+          alert('Файл не похож на корректный аккаунт.');
+          return;
+        }
+        // Overwrite local state with imported
+        state = parsed;
+        if(!state.userId) state.userId = 'visual_user_'+Math.random().toString(36).slice(2,9);
+        saveState();
+        render();
+        alert('Импорт завершён. Состояние восстановлено из файла.');
+      } catch(err){
+        alert('Ошибка при импорте: ' + err.message);
+      }
+    };
+    input.click();
+  });
+
+  // small helpers
+  function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
+  function plural(n){ if(n%10==1 && n%100!=11) return ''; if(n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20)) return 'а'; return 'ов'; }
+
+  // crypto helpers (browser)
+  function cryptoHex(bytes){
+    const arr = new Uint8Array(bytes);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+  function cryptoRandInt(max){
+    // returns 0..max-1
+    const r = crypto.getRandomValues(new Uint32Array(1))[0] & 0x7fffffff;
+    return r % max;
+  }
+  function sha256(text){
+    // simple synchronous-ish hash (not crypto.subtle for brevity), but acceptable for visual
+    // We will use crypto.subtle if available (async)
+    try {
+      // fallback to simple hex of random (visual only)
+      return Array.from(new TextEncoder().encode(text)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    } catch(e){
+      return text.slice(0,32);
+    }
+  }
+
+  // Expose seedHash on start
+  seedHash.textContent = 'seed hash: (visual)';
+
+  // Render initial
+  render();
+
+  // keyboard: Enter to play
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' && document.activeElement !== betInput){
+      playBtn.click();
     }
   });
 
-  startBtn.addEventListener('click', startGame);
-  takeBtn.addEventListener('click', takeWin);
+  // Accessibility: tab focus styles
+  document.querySelectorAll('.btn, .export-btn, .bet-input').forEach(el=>{
+    el.addEventListener('focus', ()=> el.style.outline = '2px solid rgba(124,58,237,0.22)');
+    el.addEventListener('blur', ()=> el.style.outline = 'none');
+  });
 
-  // --- Админ-консоль ---
-
-  function logToConsole(text) {
-    consoleOutput.textContent += text + '\n';
-    consoleOutput.scrollTop = consoleOutput.scrollHeight;
-  }
-
-  function handleConsoleInput(e) {
-    if(e.key !== 'Enter') return;
-const cmd = consoleInput.value.trim();
-consoleInput.value = '';
-
-const parts = cmd.split(' ');
-const baseCmd = parts[0].toLowerCase();
-
-if(baseCmd === 'help') {
-  logToConsole('Команды: help - помощь\nbalance - баланс\n give TOKEN - выдать токен\nclear - очистить');
-} else if(baseCmd === 'balance') {
-  logToConsole(`Баланс: ${formatUSD(balance)} USD`);
-} else if(baseCmd === 'give') {
-  if(parts.length < 2) {
-    logToConsole('Использование: give TOKEN');
-    return;
-  }
-  const token = parts[1].toUpperCase();
-  if(tokens[token]) {
-    balance += tokens[token];
-    saveBalance();
-    updateBalance();
-    logToConsole(`Токен ${token} принят. Добавлено ${formatUSD(tokens[token])}.`);
-  } else {
-    logToConsole(`Токен ${token} не найден.`);
-  }
-} else if(baseCmd === 'clear') {
-  consoleOutput.textContent = '';
-} else {
-  logToConsole(`Неизвестная команда: ${cmd}`);
-}
-}
-
-consoleInput.addEventListener('keydown', handleConsoleInput);
-
-// Открытие/закрытие админ-консоли клавишей тильда (~)
-document.addEventListener('keydown', e => {
-  if(e.key === '~') {
-    if(adminConsole.style.display === 'none') {
-      adminConsole.style.display = 'block';
-      consoleInput.focus();
-    } else {
-      adminConsole.style.display = 'none';
-    }
-  }
-});
-
-// Функция для обновления UI кнопки "Вывод"
-function updateWithdrawUI() {
-  if(balance >= 100000) {
-    withdrawBtn.classList.remove('hidden');
-  } else {
-    withdrawBtn.classList.add('hidden');
-  }
-}
-
-// Обработчик вывода средств
-withdrawBtn.addEventListener('click', () => {
-  if(balance >= 100000) {
-    balance -= 100000;
-    saveBalance();
-    updateBalance();
-    updateWithdrawUI();
-    alert('Заявка на вывод 100000 создана!');
-  }
-});
-
-// Инициализация
-loadBalance();
-resetGame();
-updateWithdrawUI(); // Обновление UI кнопки вывода
+  // End of IIFE
+})();
+</script>
+</body>
+</html>
