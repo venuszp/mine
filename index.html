@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Лесенка — Прототип (визуал)</title>
+<title>Лесенка</title>
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 <style>
   :root{
@@ -25,14 +25,10 @@
     var(--bg);
     -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   }
-  .page{
-    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:36px;
-  }
-  .container{
-    width:1060px;max-width:96%;display:grid;grid-template-columns:1fr 420px;gap:28px;
-  }
+  .page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:36px;}
+  .container{width:1060px;max-width:96%;display:grid;grid-template-columns:1fr 420px;gap:28px;}
 
-  /* Left: Game area */
+  /* Панель */
   .panel{
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     border:1px solid var(--glass);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;
@@ -43,81 +39,45 @@
 
   /* Controls */
   .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px}
-  .balance{
-    background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border:1px solid rgba(255,255,255,0.04);padding:12px 16px;border-radius:12px;display:flex;align-items:center;gap:12px;
-    min-width:220px;
-  }
+  .balance{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);padding:12px 16px;border-radius:12px;display:flex;align-items:center;gap:12px;min-width:220px;}
   .bal-amount{font-weight:700;font-size:18px}
   .small{font-size:12px;color:var(--muted)}
-
   .bet-wrap{display:flex;gap:8px;align-items:center}
   .bet-input{width:120px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;font-weight:600}
-  .btn{
-    padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;font-weight:700;cursor:pointer;
-    transition:transform .12s var(--soft), box-shadow .12s var(--soft), background .12s var(--soft);
-  }
+  .btn{padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;font-weight:700;cursor:pointer;transition:transform .12s var(--soft), box-shadow .12s var(--soft), background .12s var(--soft);}
   .btn:active{transform:translateY(2px)}
   .btn.primary{background:linear-gradient(90deg,var(--accent1),#06b6d4);color:#011028;border:none;box-shadow:0 14px 40px rgba(124,58,237,0.16)}
 
   /* Ladder */
   .ladder-wrap{display:flex;justify-content:center;align-items:flex-end;position:relative;padding:18px 8px 4px 8px;}
   .ladder{display:flex;flex-direction:column-reverse;gap:8px;width:620px;max-width:100%}
-  .step{
-    height:56px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.008));
-    border:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:space-between;padding:12px 20px;
-    transition:transform .45s var(--soft), box-shadow .35s var(--soft), background .35s var(--soft);
-    position:relative;overflow:hidden;
-  }
+  .step{height:56px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.008));border:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:space-between;padding:12px 20px;transition:transform .45s var(--soft), box-shadow .35s var(--soft), background .35s var(--soft);}
   .step .label{font-weight:700}
   .step .mult{font-weight:700;color:var(--muted)}
   .step.hover{transform:translateY(-8px) scale(1.01);border-color:rgba(255,255,255,0.08)}
   .step.win{background:linear-gradient(90deg, rgba(124,58,237,0.12), rgba(6,182,212,0.06));box-shadow:0 18px 60px rgba(124,58,237,0.12)}
   .step.lose{background:linear-gradient(90deg, rgba(244,63,94,0.10), rgba(249,115,22,0.04));box-shadow:0 18px 60px rgba(244,63,94,0.10)}
 
-  /* Player marker */
-  .marker{
-    position:absolute;left:18px;top:0;width:44px;height:44px;border-radius:10px;background:linear-gradient(180deg,#fff,#e6eef8);display:flex;align-items:center;justify-content:center;font-weight:800;color:#031026;
-    transform:translateY(0);transition:transform .65s cubic-bezier(.2,.9,.2,1);
-    box-shadow:0 14px 40px rgba(2,6,23,0.6);
-  }
+  /* Marker */
+  .marker{position:absolute;left:18px;top:0;width:44px;height:44px;border-radius:10px;background:linear-gradient(180deg,#fff,#e6eef8);display:flex;align-items:center;justify-content:center;font-weight:800;color:#031026;transform:translateY(0);transition:transform .65s cubic-bezier(.2,.9,.2,1);box-shadow:0 14px 40px rgba(2,6,23,0.6);}
 
-  /* Right: preview / logs */
+  /* Sidebar */
   .sidebar{display:flex;flex-direction:column;gap:14px}
   .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);padding:16px;border-radius:12px;min-height:120px}
   .log{max-height:240px;overflow:auto;font-size:13px;color:var(--muted);padding-right:6px}
-
-  /* result overlay */
-  .overlay{
-    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(0deg, rgba(2,6,23,0.55), rgba(2,6,23,0.45));opacity:0;pointer-events:none;transition:opacity .28s;
-  }
-  .overlay.show{opacity:1;pointer-events:auto}
-  .result-box{width:540px;max-width:95%;padding:22px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.06);text-align:center}
-  .result-title{font-size:22px;font-weight:800;margin-bottom:8px}
-  .result-sub{color:var(--muted);margin-bottom:12px}
-
-  /* small helpers */
   .muted{color:var(--muted);font-size:13px}
   .controls-right{margin-left:auto;display:flex;gap:8px;align-items:center}
   .export-btn{background:transparent;border:1px dashed rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;font-size:13px}
-  .fatal{color:#ffb4b4}
-  footer{margin-top:12px;color:var(--muted);font-size:12px;text-align:center}
-  @media (max-width:1000px){
-    .container{grid-template-columns:1fr;align-items:start}
-    .ladder{width:100%}
-    .marker{left:8px}
-  }
 </style>
 </head>
 <body>
 <div class="page">
   <div class="container">
-    <section class="panel" aria-labelledby="title">
-      <h1 id="title">Лесенка — визуальный прототип</h1>
-      <p class="desc">Интерфейс и анимации. Баланс стартовый — <strong>$100</strong>. Если баланс достигает 0 — помечается как «depleted» и не восстанавливается в этом прототипе без экспорта/импорта аккаунта.</p>
-
+    <section class="panel">
+      <h1>Лесенка</h1>
+      <p class="desc">Баланс стартовый — <strong>$100</strong>. Если баланс достигает 0 — он не восстанавливается.</p>
       <div class="controls">
-        <div class="balance" title="Баланс">
+        <div class="balance">
           <div>
             <div class="small">Баланс</div>
             <div class="bal-amount" id="bal">$100.00</div>
@@ -127,7 +87,6 @@
             <div id="status" class="small">active</div>
           </div>
         </div>
-
         <div class="bet-wrap">
           <input id="bet" class="bet-input" type="number" min="1" step="1" value="5" />
           <button id="playBtn" class="btn primary">Играть</button>
@@ -137,424 +96,122 @@
           </div>
         </div>
       </div>
-
       <div class="ladder-wrap" id="ladderArea" style="height:520px">
         <div class="marker" id="marker" style="transform:translateY(480px)">$</div>
         <div class="ladder" id="ladder"></div>
-        <!-- overlay result -->
-        <div class="overlay" id="overlay">
-          <div class="result-box" id="resultBox">
-            <div class="result-title" id="resultTitle">Результат</div>
-            <div class="result-sub" id="resultSub">...</div>
-            <div><button id="closeRes" class="btn">Продолжить</button></div>
-          </div>
-        </div>
       </div>
-
-      <footer>Прототип — визуал. Для настоящей сохранности нужна серверная реализация и привязка аккаунта/кошелька.</footer>
     </section>
-
     <aside class="sidebar">
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <div style="font-weight:800">Текущий раунд</div>
-            <div class="muted" id="roundInfo">-</div>
-          </div>
-          <div style="text-align:right">
-            <div class="muted">Макс шагов</div>
-            <div style="font-weight:800" id="maxSteps">10</div>
-          </div>
-        </div>
-        <div style="margin-top:12px" id="seedHash" class="muted">seed: —</div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:800;margin-bottom:8px">Лог раундов</div>
+        <div><div style="font-weight:800">Лог раундов</div></div>
         <div class="log" id="log"></div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:800;margin-bottom:8px">Управление (визуал)</div>
-        <div class="muted">Экспорт позволяет сохранить \"аккаунт\" (JSON). Импорт восстанавливает сохранённое состояние — это эмуляция серверного хранения.</div>
       </div>
     </aside>
   </div>
 </div>
 
 <script>
-/*
-  Прототип — визуал. Логика эмулирует:
-  - стартовый баланс $100 (единоразово при первом запуске)
-  - раунд: ставка -> RNG -> достижение N шагов -> выплата
-  - если баланс <= 0: помечается depleted и не восстанавливается автоматически
-  - state хранится в localStorage как 'ladder_prot_state' (эмуляция сервера)
-  - есть экспорт/импорт аккаунта (json-файл) — это единственный способ восстановить состояние после удаления localStorage
-*/
-
 (() => {
-  // --- Конфигурация игры ---
   const CONFIG = {
     START_BALANCE: 100.00,
     MAX_STEPS: 10,
-    // multipliers for steps 1..MAX_STEPS (progressive)
     MULTIPLIERS: [1.05,1.12,1.25,1.5,1.8,2.3,3.0,4.5,7.0,12.0],
-    // win chance at each step (for visual): higher steps = lower chance
-    CHANCES: [900000,800000,700000,600000,480000,320000,160000,80000,30000,8000], // out of 1_000_000
+    CHANCES: [900000,800000,700000,600000,480000,320000,160000,80000,30000,8000],
   };
 
-  // --- Elements ---
   const ladderEl = document.getElementById('ladder');
   const balEl = document.getElementById('bal');
   const statusEl = document.getElementById('status');
   const betInput = document.getElementById('bet');
   const playBtn = document.getElementById('playBtn');
   const marker = document.getElementById('marker');
-  const overlay = document.getElementById('overlay');
-  const resultTitle = document.getElementById('resultTitle');
-  const resultSub = document.getElementById('resultSub');
-  const closeRes = document.getElementById('closeRes');
   const logEl = document.getElementById('log');
-  const roundInfo = document.getElementById('roundInfo');
-  const seedHash = document.getElementById('seedHash');
   const exportBtn = document.getElementById('exportBtn');
   const importBtn = document.getElementById('importBtn');
-  const maxStepsEl = document.getElementById('maxSteps');
 
-  maxStepsEl.textContent = CONFIG.MAX_STEPS;
+  const STORAGE_KEY = 'ladder_state';
+  let state = { userId:null, balance:CONFIG.START_BALANCE, depleted:false, rounds:[], createdAt:Date.now() };
 
-  // --- State (emulated server) ---
-  const STORAGE_KEY = 'ladder_prot_state_v1';
-  let state = {
-    userId: null,
-    balance: CONFIG.START_BALANCE,
-    depleted: false,
-    rounds: [], // log of rounds
-    createdAt: Date.now(),
-  };
-
-  // --- Utility ---
-  function formatMoney(n){
-    return '$' + Number(n).toFixed(2);
-  }
-  function nowStr(){ return new Date().toLocaleString(); }
   function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-  function loadState(){
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return false;
-    try{
-      state = JSON.parse(raw);
-      // sanity fix
-      if(typeof state.balance !== 'number') state.balance = CONFIG.START_BALANCE;
-      return true;
-    }catch(e){ return false; }
-  }
+  function loadState(){ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return false; try{state=JSON.parse(raw);return true;}catch{return false;} }
+  function resetToStart(){ state={ userId:'user_'+Math.random().toString(36).slice(2,9), balance:CONFIG.START_BALANCE, depleted:false, rounds:[], createdAt:Date.now()}; saveState(); }
 
-  function resetToStart(){
-    state = {
-      userId: 'visual_user_'+Math.random().toString(36).slice(2,9),
-      balance: CONFIG.START_BALANCE,
-      depleted: false,
-      rounds: [],
-      createdAt: Date.now(),
-    };
-    saveState();
-  }
+  if(!loadState()) resetToStart();
+  if(!state.userId) state.userId='user_'+Math.random().toString(36).slice(2,9);
 
-  // --- init ---
-  if(!loadState()){
-    resetToStart();
-  }
-  if(!state.userId) state.userId = 'visual_user_'+Math.random().toString(36).slice(2,9);
-  saveState();
+  function formatMoney(n){ return '$'+Number(n).toFixed(2); }
+  function nowStr(){ return new Date().toLocaleString(); }
 
-  // Build ladder UI
   function buildLadder(){
-    ladderEl.innerHTML = '';
-    for(let i=CONFIG.MAX_STEPS; i>=1; --i){
-      const step = document.createElement('div');
-      step.className = 'step';
-      step.dataset.index = i;
-      const label = document.createElement('div');
-      label.className = 'label';
-      label.textContent = 'Шаг ' + i;
-      const mult = document.createElement('div');
-      mult.className = 'mult';
-      const m = CONFIG.MULTIPLIERS[i-1] || 1;
-      mult.textContent = m + 'x';
-      step.appendChild(label);
-      step.appendChild(mult);
+    ladderEl.innerHTML='';
+    for(let i=CONFIG.MAX_STEPS;i>=1;--i){
+      const step=document.createElement('div');
+      step.className='step';
+      step.dataset.index=i;
+      const label=document.createElement('div');label.className='label';label.textContent='Шаг '+i;
+      const mult=document.createElement('div');mult.className='mult';mult.textContent=(CONFIG.MULTIPLIERS[i-1]||1)+'x';
+      step.appendChild(label);step.appendChild(mult);
       ladderEl.appendChild(step);
-
-      // hover visual
-      step.addEventListener('mouseenter', ()=> step.classList.add('hover'));
-      step.addEventListener('mouseleave', ()=> step.classList.remove('hover'));
     }
-    // position marker at bottom (off ladder)
-    updateMarkerPosition(0, true);
+    updateMarkerPosition(0,true);
   }
   buildLadder();
 
-  // --- UI updates ---
   function render(){
-    balEl.textContent = formatMoney(state.balance);
-    statusEl.textContent = state.depleted ? 'depleted' : 'active';
-    roundInfo.textContent = `Раундов: ${state.rounds.length}`;
-    // log
-    logEl.innerHTML = state.rounds.slice().reverse().map(r => {
-      return `<div style="margin-bottom:8px"><div style="font-weight:700">${r.resultTitle}</div><div class="muted">${r.time} — ставка ${formatMoney(r.bet)}, изменение ${r.change >=0 ? '+' : ''}${formatMoney(r.change)} — баланс ${formatMoney(r.balanceAfter)}</div></div>`;
-    }).join('');
-  }
-  render();
-
-  // --- Marker animation helper ---
-  function updateMarkerPosition(stepIndex, immediate){
-    // stepIndex = 0 (below first), 1..MAX_STEPS
-    // compute Y by locating step element
-    const steps = Array.from(ladderEl.children);
-    let targetY;
-    if(stepIndex <= 0){
-      // below the first: place near bottom of ladder container
-      const ladderRect = ladderEl.getBoundingClientRect();
-      targetY = ladderRect.height - 44 - 8; // marker height
-    } else {
-      const step = steps[CONFIG.MAX_STEPS - stepIndex]; // because ladder is reversed
-      if(!step) { targetY = ladderEl.getBoundingClientRect().height - 44 - 8; }
-      else {
-        const rect = step.getBoundingClientRect();
-        const parent = ladderEl.getBoundingClientRect();
-        // marker top relative to ladder
-        targetY = rect.top - parent.top + (rect.height - 44)/2;
-      }
-    }
-    // set transform
-    if(immediate){
-      marker.style.transition = 'none';
-      marker.style.transform = `translateY(${targetY}px)`;
-      requestAnimationFrame(()=> marker.style.transition = 'transform .65s cubic-bezier(.2,.9,.2,1)');
-    } else {
-      marker.style.transform = `translateY(${targetY}px)`;
-    }
+    balEl.textContent=formatMoney(state.balance);
+    statusEl.textContent=state.depleted?'depleted':'active';
+    logEl.innerHTML=state.rounds.slice().reverse().map(r=>`<div style="margin-bottom:8px"><div style="font-weight:700">${r.title}</div><div class="muted">${r.time} — ставка ${formatMoney(r.bet)}, изменение ${r.change>=0?'+':''}${formatMoney(r.change)} — баланс ${formatMoney(r.balanceAfter)}</div></div>`).join('');
   }
 
-  // --- Core play flow (emulated server) ---
-  function playRound(bet){
-    if(state.depleted) {
-      showResult('Баланс исчерпан', 'Нельзя играть. Экспортируй свой аккаунт если хочешь сохранить историю.', true);
-      return;
-    }
-    if(bet <= 0 || isNaN(bet)) {
-      showResult('Ошибка ставки', 'Введите корректную ставку.', true);
-      return;
-    }
-    if(bet > state.balance){
-      showResult('Недостаточно средств', `Ваш баланс ${formatMoney(state.balance)} — ставка ${formatMoney(bet)} недоступна.`, true);
-      return;
-    }
+  function updateMarkerPosition(stepIndex,immediate){
+    const steps=Array.from(ladderEl.children);let targetY;
+    if(stepIndex<=0){const ladderRect=ladderEl.getBoundingClientRect();targetY=ladderRect.height-44-8;}
+    else {const step=steps[CONFIG.MAX_STEPS-stepIndex];const rect=step.getBoundingClientRect();const parent=ladderEl.getBoundingClientRect();targetY=rect.top-parent.top+(rect.height-44)/2;}
+    if(immediate){marker.style.transition='none';marker.style.transform=`translateY(${targetY}px)`;requestAnimationFrame(()=>marker.style.transition='transform .65s cubic-bezier(.2,.9,.2,1)');}
+    else {marker.style.transform=`translateY(${targetY}px)`;}
+  }
 
-    // Emulate server precommit: generate server_seed and show its hash (visual)
-    const server_seed = cryptoHex(16);
-    const seed_hash = sha256(server_seed);
-    seedHash.textContent = 'seed hash: ' + seed_hash.slice(0,22) + '…';
-
-    // Build round record
-    const round = { time: nowStr(), bet, server_seed, seed_hash };
-
-    // Determine how many steps player will pass.
-    // We'll simulate sequential checks: each step has a chance (CHANCES with denominator 1_000_000).
-    // The process animates marker moving up step-by-step; stop at failure or at MAX_STEPS.
-    const rngBytes = cryptoRandInt(0x7fffffff);
-    // simulate sequentially
-    let passed = 0;
-    for(let i=0;i<CONFIG.MAX_STEPS;i++){
-      const chance = CONFIG.CHANCES[i] || 100000; // fallback
-      const r = cryptoRandInt(1000000);
-      if(r < chance) passed = i+1;
-      else break;
-    }
-
-    // payout calculation: multiplier at passed-1, payout = bet * multiplier if passed>0 else 0
-    const multiplier = passed > 0 ? (CONFIG.MULTIPLIERS[passed-1] || 1) : 0;
-    const payout = passed > 0 ? bet * multiplier : 0;
-    const change = payout - bet;
-    const newBalance = +(state.balance + change).toFixed(2);
-
-    // Save round to state (atomic emulation)
-    round.passed = passed;
-    round.multiplier = multiplier;
-    round.payout = +payout.toFixed(2);
-    round.change = +change.toFixed(2);
-    round.balanceAfter = newBalance;
-    state.balance = newBalance;
-    state.rounds.push(round);
-    if(state.balance <= 0.0001){
-      state.depleted = true;
-      state.balance = 0;
-    }
+  async function playRound(bet){
+    if(state.depleted) return;
+    if(bet<=0||isNaN(bet)||bet>state.balance) return;
+    let passed=0;
+    for(let i=0;i<CONFIG.MAX_STEPS;i++){if(cryptoRandInt(1000000)<CONFIG.CHANCES[i]) passed=i+1; else break;}
+    const multiplier=passed>0?(CONFIG.MULTIPLIERS[passed-1]||1):0;
+    const payout=passed>0?bet*multiplier:0;
+    const change=payout-bet;
+    const newBalance=+(state.balance+change).toFixed(2);
+    const round={time:nowStr(),bet,passed,multiplier,payout:+payout.toFixed(2),change:+change.toFixed(2),balanceAfter:newBalance,title:passed>0?`Успех: ${passed} шаг(ов)`:'Поражение'};
+    state.balance=newBalance;state.rounds.push(round);
+    if(state.balance<=0.0001){state.depleted=true;state.balance=0;}
     saveState();
-
-    // Now animate: move marker step by step with small delays
-    animateRun(passed, round);
-  }
-
-  // --- Animation for run ---
-  async function animateRun(passed, round){
-    playBtn.disabled = true;
-    betInput.disabled = true;
-
-    const stepsCount = CONFIG.MAX_STEPS;
-    // reset visuals
-    const stepEls = Array.from(ladderEl.children);
-    stepEls.forEach(s => { s.classList.remove('win','lose'); });
-
-    // start from 0 -> animate through steps until passed or failed
-    let cur = 0;
-    updateMarkerPosition(0, false);
-    await sleep(220);
-
-    // animate passing steps sequentially
-    let failedAt = null;
-    for(let i=1;i<=stepsCount;i++){
-      // highlight step
-      const el = stepEls[stepsCount - i];
-      el.classList.add('hover');
-      updateMarkerPosition(i, false);
-      await sleep(280);
-
-      el.classList.remove('hover');
-
-      if(i <= passed){
-        // win this step
-        el.classList.add('win');
-        // small pop
-        el.animate([{transform:'scale(1)'},{transform:'scale(1.03)'},{transform:'scale(1)'}],{duration:260,easing:'cubic-bezier(.2,.9,.2,1)'});
-        await sleep(180);
-      } else {
-        // failure at this step
-        el.classList.add('lose');
-        failedAt = i;
-        // bounce marker a bit to show fail
-        marker.animate([{transform: marker.style.transform},{transform: marker.style.transform + ' translateY(-8px)'},{transform:marker.style.transform}],{duration:520,easing:'cubic-bezier(.2,.9,.2,1)'});
-        break;
-      }
-    }
-
-    // final settle position: if passed>0 -> at passed, else stay at 0 (below)
-    updateMarkerPosition(passed, false);
-    await sleep(240);
-
-    // Show overlay result
-    if(passed > 0){
-      showResult('Вы прошли ' + passed + ' шаг' + plural(passed), `Выигрыш: ${formatMoney(round.payout)} (x${round.multiplier})`, false);
-    } else {
-      showResult('Вы проиграли', `Ставка: ${formatMoney(round.bet)} списана. Баланс: ${formatMoney(round.balanceAfter)}`, false);
-    }
-
-    // re-enable controls (if not depleted)
-    playBtn.disabled = !!state.depleted;
-    betInput.disabled = !!state.depleted;
+    await animateRun(passed);
     render();
   }
 
-  // --- Overlay result control ---
-  function showResult(title, sub, isError){
-    resultTitle.textContent = title;
-    resultSub.textContent = sub;
-    if(isError) resultTitle.classList.add('fatal'); else resultTitle.classList.remove('fatal');
-    overlay.classList.add('show');
-  }
-  closeRes.addEventListener('click', ()=>{ overlay.classList.remove('show'); });
-
-  // --- Event handlers ---
-  playBtn.addEventListener('click', ()=> {
-    const bet = +Number(betInput.value || 0);
-    playRound(bet);
-  });
-
-  // Export / Import account (JSON)
-  exportBtn.addEventListener('click', ()=> {
-    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'ladder-account-' + (state.userId||'user') + '.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  });
-
-  importBtn.addEventListener('click', ()=> {
-    const input = document.createElement('input');
-    input.type = 'file'; input.accept = 'application/json';
-    input.onchange = async (e) => {
-      const f = e.target.files[0];
-      if(!f) return;
-      try {
-        const txt = await f.text();
-        const parsed = JSON.parse(txt);
-        // basic validation
-        if(typeof parsed.balance !== 'number' || !Array.isArray(parsed.rounds)) {
-          alert('Файл не похож на корректный аккаунт.');
-          return;
-        }
-        // Overwrite local state with imported
-        state = parsed;
-        if(!state.userId) state.userId = 'visual_user_'+Math.random().toString(36).slice(2,9);
-        saveState();
-        render();
-        alert('Импорт завершён. Состояние восстановлено из файла.');
-      } catch(err){
-        alert('Ошибка при импорте: ' + err.message);
-      }
-    };
-    input.click();
-  });
-
-  // small helpers
-  function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
-  function plural(n){ if(n%10==1 && n%100!=11) return ''; if(n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20)) return 'а'; return 'ов'; }
-
-  // crypto helpers (browser)
-  function cryptoHex(bytes){
-    const arr = new Uint8Array(bytes);
-    crypto.getRandomValues(arr);
-    return Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
-  }
-  function cryptoRandInt(max){
-    // returns 0..max-1
-    const r = crypto.getRandomValues(new Uint32Array(1))[0] & 0x7fffffff;
-    return r % max;
-  }
-  function sha256(text){
-    // simple synchronous-ish hash (not crypto.subtle for brevity), but acceptable for visual
-    // We will use crypto.subtle if available (async)
-    try {
-      // fallback to simple hex of random (visual only)
-      return Array.from(new TextEncoder().encode(text)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    } catch(e){
-      return text.slice(0,32);
+  async function animateRun(passed){
+    playBtn.disabled=true;betInput.disabled=true;
+    const stepEls=Array.from(ladderEl.children);stepEls.forEach(s=>s.classList.remove('win','lose'));
+    let cur=0;updateMarkerPosition(0,false);await sleep(200);
+    let failedAt=null;
+    for(let i=1;i<=CONFIG.MAX_STEPS;i++){
+      const el=stepEls[CONFIG.MAX_STEPS-i];el.classList.add('hover');
+      updateMarkerPosition(i,false);await sleep(250);el.classList.remove('hover');
+      if(i<=passed){el.classList.add('win');el.animate([{transform:'scale(1)'},{transform:'scale(1.03)'},{transform:'scale(1)'}],{duration:260,easing:'cubic-bezier(.2,.9,.2,1)'});}
+      else {el.classList.add('lose');failedAt=i;break;}
     }
+    updateMarkerPosition(passed,false);await sleep(240);
+    playBtn.disabled=!!state.depleted;betInput.disabled=!!state.depleted;
   }
 
-  // Expose seedHash on start
-  seedHash.textContent = 'seed hash: (visual)';
+  function sleep(ms){return new Promise(res=>setTimeout(res,ms));}
+  function cryptoRandInt(max){const r=crypto.getRandomValues(new Uint32Array(1))[0]&0x7fffffff;return r%max;}
 
-  // Render initial
+  playBtn.addEventListener('click',()=>{const bet=+Number(betInput.value||0);playRound(bet);});
+  exportBtn.addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ladder-'+(state.userId||'user')+'.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);});
+  importBtn.addEventListener('click',()=>{const input=document.createElement('input');input.type='file';input.accept='application/json';input.onchange=async e=>{const f=e.target.files[0];if(!f) return;try{const txt=await f.text();const parsed=JSON.parse(txt);if(typeof parsed.balance!=='number'||!Array.isArray(parsed.rounds)){alert('Файл невалиден');return;}state=parsed;if(!state.userId)state.userId='user_'+Math.random().toString(36).slice(2,9);saveState();render();}catch(err){alert('Ошибка импорта: '+err.message);}};input.click();});
   render();
-
-  // keyboard: Enter to play
-  document.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter' && document.activeElement !== betInput){
-      playBtn.click();
-    }
-  });
-
-  // Accessibility: tab focus styles
-  document.querySelectorAll('.btn, .export-btn, .bet-input').forEach(el=>{
-    el.addEventListener('focus', ()=> el.style.outline = '2px solid rgba(124,58,237,0.22)');
-    el.addEventListener('blur', ()=> el.style.outline = 'none');
-  });
-
-  // End of IIFE
 })();
 </script>
 </body>
 </html>
+
