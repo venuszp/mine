@@ -3,239 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Космический Чат</title>
+    <title>Общий Видео-Текстовый Чат</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* --- CSS переменные для легкой настройки --- */
         :root {
-            --text-color: #f0f0f0;
-            --accent-color: #0084ff;
-            --glass-bg: rgba(0, 0, 0, 0.3);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --shadow-color: rgba(0, 0, 0, 0.37);
+            --text-color: #f0f0f0; --accent-color: #0084ff; --glass-bg: rgba(0, 0, 0, 0.35);
+            --glass-border: rgba(255, 255, 255, 0.2); --shadow-color: rgba(0, 0, 0, 0.37);
         }
-
-        /* --- Базовые стили и анимированный фон --- */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Montserrat', sans-serif;
-            color: var(--text-color);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden; /* Чтобы фон не вылезал за пределы */
+            font-family: 'Montserrat', sans-serif; color: var(--text-color); margin: 0;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden;
         }
-
         #background-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            /* Те самые космические цвета */
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
             background: linear-gradient(-45deg, #1a2a6c, #b21f1f, #fdbb2d);
-            background-size: 400% 400%;
-            /* Ключевая анимация "плавающего" градиента */
-            animation: gradientAnimation 15s ease infinite;
+            background-size: 400% 400%; animation: gradientAnimation 15s ease infinite;
         }
+        @keyframes gradientAnimation { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        @keyframes gradientAnimation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* --- Контейнер в стиле "матового стекла" (Glassmorphism) --- */
         .glass-container {
-            width: 100%;
-            max-width: 420px;
-            padding: 30px;
-            background: var(--glass-bg);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px 0 var(--shadow-color);
-            /* Магия размытия фона */
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border);
+            width: 100%; max-width: 550px; padding: 30px; background: var(--glass-bg);
+            border-radius: 16px; box-shadow: 0 8px 32px 0 var(--shadow-color);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border); transition: transform 0.1s ease-in-out;
         }
-
         .page { display: none; }
         .page.active { display: block; }
-        
         h2 { text-align: center; margin-bottom: 25px; font-weight: 600; }
-        
-        /* --- Стили для форм (вход, регистрация) --- */
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-size: 0.9em; opacity: 0.8; }
-        input[type="email"], input[type="password"], input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            color: var(--text-color);
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1em;
-            transition: all 0.2s ease;
-        }
-        input::placeholder { color: rgba(255, 255, 255, 0.5); }
-        input:focus {
-            background: rgba(255, 255, 255, 0.2);
-            outline: none;
-            box-shadow: 0 0 0 2px var(--accent-color);
-        }
-
-        .btn {
-            display: block; width: 100%; padding: 14px; background-color: var(--accent-color); color: white;
-            border: none; border-radius: 8px; cursor: pointer; text-align: center; text-decoration: none;
-            font-size: 1em; font-weight: 600; transition: background-color 0.3s ease, transform 0.1s ease;
-        }
-        .btn:hover { background-color: #0073e6; }
-        .btn:active { transform: scale(0.98); }
-
+        input { width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.1); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-color); font-family: 'Montserrat', sans-serif; font-size: 1em; }
+        .btn { display: block; width: 100%; padding: 14px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; text-align: center; text-decoration: none; font-size: 1em; font-weight: 600; transition: all 0.2s ease; }
+        .btn-secondary { background-color: rgba(255, 255, 255, 0.15); }
+        .btn-leave { background-color: #e74c3c; }
         .link { color: var(--accent-color); text-decoration: none; cursor: pointer; font-weight: 600; }
-        .link:hover { text-decoration: underline; }
-        .text-center { text-align: center; margin-top: 20px; font-size: 0.9em; }
-        .error-message { color: #ff8a8a; text-align: center; margin-bottom: 15px; min-height: 1.2em; }
-
-        /* --- Стили для страницы чата --- */
-        #chat-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-            border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;
-        }
-        #chat-header h2 { margin: 0; }
         
-        #chat-window {
-            height: 450px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px; /* Тот самый "воздух" между сообщениями */
-            overflow-y: auto;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-        /* Стилизация скроллбара */
-        #chat-window::-webkit-scrollbar { width: 6px; }
-        #chat-window::-webkit-scrollbar-track { background: transparent; }
-        #chat-window::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
-        #chat-window::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
-
-        #chat-form { display: flex; gap: 10px; }
-        #message-input { flex-grow: 1; }
-        #send-button { width: auto; padding: 12px 20px; }
+        #chat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
+        #chat-window { height: 300px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding: 10px; margin-bottom: 15px; border-radius: 8px; background: rgba(0,0,0,0.1); }
+        .message { max-width: 80%; padding: 10px 15px; word-wrap: break-word; line-height: 1.4; animation: fadeIn 0.4s ease-out; position: relative; overflow: visible !important; }
+        .message .username { font-size: 0.75em; font-weight: 600; display: block; margin-bottom: 4px; opacity: 0.8; }
+        .message.received { align-self: flex-start; background: rgba(255, 255, 255, 0.15); border-radius: 18px 18px 18px 5px; }
+        .message.sent { align-self: flex-end; background: var(--accent-color); color: white; border-radius: 18px 18px 5px 18px; }
         
-        /* --- Магия для "бабблов" сообщений --- */
-        .message {
-            max-width: 80%;
-            padding: 10px 15px;
-            word-wrap: break-word;
-            line-height: 1.4;
-            animation: fadeIn 0.4s ease-out;
-        }
+        /* Стили для видео */
+        #videos-container { display: none; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px; min-height: 100px; }
+        .video-player { width: 100%; height: 90px; background: #000; border-radius: 6px; position: relative; }
+        .video-player video { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
         
-        .message .username {
-            font-size: 0.75em;
-            font-weight: 600;
-            display: block;
-            margin-bottom: 4px;
-            opacity: 0.8;
-        }
-        
-        /* Сообщение ДРУГОГО пользователя (received) */
-        .message.received {
-            align-self: flex-start;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 18px 18px 18px 5px; /* Хвостик слева внизу */
-        }
-        
-        /* Сообщение ТЕКУЩЕГО пользователя (sent) */
-        .message.sent {
-            align-self: flex-end;
-            background: var(--accent-color);
-            color: white;
-            border-radius: 18px 18px 5px 18px; /* Хвостик справа внизу */
-        }
-        .message.sent .username { color: rgba(255, 255, 255, 0.8); }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(15px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+        /* Анимации эффектов */
+        .effect-shake-window .glass-container { animation: screenShake 0.4s ease-in-out; }
+        @keyframes screenShake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); } 20%, 40%, 60%, 80% { transform: translateX(8px); } }
+        .particle-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+        .particle { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; border-radius: 50%; animation: particle-anim 1s ease-out forwards; }
+        @keyframes particle-anim { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; } }
+        .message.flash { animation: flash-bang 0.5s ease-out; }
+        @keyframes flash-bang { 0% { background-color: white; color: black; box-shadow: 0 0 100px 50px white; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-
     <div id="background-animation"></div>
-
     <div class="glass-container">
-        <div id="loader-page" class="page active">
-            <h2>Подключение к космосу...</h2>
-        </div>
-
-        <div id="login-page" class="page">
-            <h2>Вход</h2>
-            <p id="login-error" class="error-message"></p>
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="login-email">Email</label>
-                    <input type="email" id="login-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Пароль</label>
-                    <input type="password" id="login-password" required>
-                </div>
-                <button type="submit" class="btn">Войти</button>
-            </form>
-            <div class="text-center">
-                Нет аккаунта? <a href="#" class="link" onclick="showPage('register-page')">Создать</a>
-            </div>
-        </div>
-
-        <div id="register-page" class="page">
-            <h2>Регистрация</h2>
-            <p id="register-error" class="error-message"></p>
-            <form id="register-form">
-                <div class="form-group">
-                    <label for="register-email">Email</label>
-                    <input type="email" id="register-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-password">Пароль</label>
-                    <input type="password" id="register-password" required>
-                </div>
-                <button type="submit" class="btn">Зарегистрироваться</button>
-            </form>
-            <div class="text-center">
-                Уже есть аккаунт? <a href="#" class="link" onclick="showPage('login-page')">Войти</a>
-            </div>
-        </div>
-
+        <div id="loader-page" class="page active"><h2>Подключение...</h2></div>
+        <div id="login-page" class="page"></div>
+        <div id="register-page" class="page"></div>
         <div id="chat-page" class="page">
             <div id="chat-header">
-                <h2>Общий чат</h2>
+                <h2>Общий Чат</h2>
                 <a href="#" class="link" id="logout-button">Выйти</a>
             </div>
-            <div id="chat-window">
-                </div>
+            <div id="videos-container">
+                <div id="local-player-container" class="video-player"></div>
+            </div>
+            <button id="join-video-btn" class="btn btn-secondary" style="margin-bottom: 15px;">📞 Войти в общий видеочат</button>
+            <div id="chat-window"></div>
             <form id="chat-form">
-                <input type="text" id="message-input" placeholder="Ваше сообщение..." autocomplete="off" required>
-                <button type="submit" id="send-button" class="btn">➤</button>
+                <input type="text" id="message-input" placeholder="Введите .взрыв и сообщение..." autocomplete="off" required>
+                <button type="submit" class="btn">➤</button>
             </form>
         </div>
     </div>
@@ -243,126 +88,145 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
 
     <script>
-        // ВАШИ КЛЮЧИ FIREBASE ИЗ ВОПРОСА
+        // --- Конфигурация ---
         const firebaseConfig = {
-            apiKey: "AIzaSyBTcH3_tri2L7AHLh1e-YD-0s-QSthuE6Q",
-            authDomain: "disk-c98ee.firebaseapp.com",
-            projectId: "disk-c98ee",
-            storageBucket: "disk-c98ee.appspot.com",
-            messagingSenderId: "59577059636",
-            appId: "1:59577059636:web:e98f456d054cc360747d61",
+            apiKey: "AIzaSyBTcH3_tri2L7AHLh1e-YD-0s-QSthuE6Q", authDomain: "disk-c98ee.firebaseapp.com",
+            projectId: "disk-c98ee", storageBucket: "disk-c98ee.appspot.com",
+            messagingSenderId: "59577059636", appId: "1:59577059636:web:e98f456d054cc360747d61",
             databaseURL: "https://disk-c98ee-default-rtdb.firebaseio.com"
         };
+        // ВАЖНО: Этот ключ публичный. Для реального проекта создайте новый!
+        const AGORA_APP_ID = "c208af4624ab4b278ffb47369fbb7706";
 
-        // Инициализация Firebase
         firebase.initializeApp(firebaseConfig);
-
         const auth = firebase.auth();
         const db = firebase.database();
-        const messagesRef = db.ref('messages');
+        const messagesRef = db.ref('unified_chat');
+        let messagesListener = null;
 
+        // --- Глобальные переменные для Agora ---
+        let agoraClient = null;
+        let localAudioTrack = null;
+        let localVideoTrack = null;
+        let isVideoJoined = false;
+
+        // --- DOM Элементы ---
         const pages = document.querySelectorAll('.page');
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const chatForm = document.getElementById('chat-form');
+        const loginPage = document.getElementById('login-page');
+        const registerPage = document.getElementById('register-page');
         const logoutButton = document.getElementById('logout-button');
-        const messageInput = document.getElementById('message-input');
+        const videosContainer = document.getElementById('videos-container');
+        const localPlayerContainer = document.getElementById('local-player-container');
+        const joinVideoBtn = document.getElementById('join-video-btn');
         const chatWindow = document.getElementById('chat-window');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const bodyElement = document.body;
 
-        function showPage(pageId) {
-            pages.forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-        }
+        // --- HTML и логика для входа/регистрации ---
+        loginPage.innerHTML = `<h2>Вход</h2><form id="login-form"><div class="form-group" style="margin-bottom: 20px;"><label>Email</label><input type="email" id="login-email" required></div><div class="form-group" style="margin-bottom: 20px;"><label>Пароль</label><input type="password" id="login-password" required></div><button type="submit" class="btn">Войти</button></form><div style="text-align: center; margin-top: 20px;">Нет аккаунта? <a href="#" class="link" onclick="showPage('register-page')">Создать</a></div>`;
+        registerPage.innerHTML = `<h2>Регистрация</h2><form id="register-form"><div class="form-group" style="margin-bottom: 20px;"><label>Email</label><input type="email" id="register-email" required></div><div class="form-group" style="margin-bottom: 20px;"><label>Пароль</label><input type="password" id="register-password" required></div><button type="submit" class="btn">Зарегистрироваться</button></form><div style="text-align: center; margin-top: 20px;">Уже есть? <a href="#" class="link" onclick="showPage('login-page')">Войти</a></div>`;
+        document.getElementById('login-form').addEventListener('submit', (e)=>{e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-password').value).catch(e => alert(e.message));});
+        document.getElementById('register-form').addEventListener('submit', (e)=>{e.preventDefault(); auth.createUserWithEmailAndPassword(document.getElementById('register-email').value, document.getElementById('register-password').value).catch(e => alert(e.message));});
 
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                showPage('chat-page');
-                listenForMessages();
+        // --- Основная логика ---
+        function showPage(pageId) { pages.forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); }
+        auth.onAuthStateChanged(user => { user ? (showPage('chat-page'), listenForMessages()) : (showPage('login-page'), messagesListener?.off()); });
+        logoutButton.addEventListener('click', async (e) => { e.preventDefault(); if(isVideoJoined) await leaveVideoCall(); auth.signOut(); });
+
+        // --- Логика Видеозвонка (Agora) ---
+        joinVideoBtn.addEventListener('click', async () => {
+            if (!isVideoJoined) {
+                await joinVideoCall();
             } else {
-                showPage('login-page');
+                await leaveVideoCall();
             }
         });
 
-        registerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            const errorElement = document.getElementById('register-error');
-            errorElement.textContent = '';
+        async function joinVideoCall() {
+            joinVideoBtn.disabled = true;
+            joinVideoBtn.textContent = 'Подключение...';
             
-            auth.createUserWithEmailAndPassword(email, password)
-                .catch(error => {
-                    errorElement.textContent = 'Ошибка: ' + error.message;
-                });
-        });
-        
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const errorElement = document.getElementById('login-error');
-            errorElement.textContent = '';
+            agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+            agoraClient.on('user-published', handleUserPublished);
+            agoraClient.on('user-unpublished', handleUserUnpublished);
+            
+            try {
+                // Все присоединяются к одному и тому же каналу
+                await agoraClient.join(AGORA_APP_ID, 'global_video_room', null, auth.currentUser.uid);
+                
+                // Запрашиваем доступ к камере и микрофону
+                [localAudioTrack, localVideoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+                
+                videosContainer.style.display = 'grid';
+                localPlayerContainer.innerHTML = ''; // Очищаем на случай, если там что-то было
+                localVideoTrack.play(localPlayerContainer);
+                
+                await agoraClient.publish([localAudioTrack, localVideoTrack]);
+                
+                joinVideoBtn.textContent = '❌ Покинуть видеочат';
+                joinVideoBtn.classList.add('btn-leave');
+                isVideoJoined = true;
 
-            auth.signInWithEmailAndPassword(email, password)
-                .catch(error => {
-                    errorElement.textContent = 'Неверный email или пароль.';
-                });
-        });
-
-        logoutButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            messagesRef.off(); // Отключаем слушателя сообщений, чтобы не было ошибок
-            auth.signOut();
-        });
-        
-        chatForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const messageText = messageInput.value.trim();
-            const user = auth.currentUser;
-
-            if (messageText && user) {
-                messagesRef.push({
-                    text: messageText,
-                    email: user.email,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-                messageInput.value = '';
+            } catch (error) {
+                console.error('Ошибка подключения к Agora:', error);
+                alert("Не удалось подключиться к видео. Проверьте разрешения для камеры/микрофона в браузере.");
+                await leaveVideoCall(); // Откат в случае ошибки
+            } finally {
+                joinVideoBtn.disabled = false;
             }
-        });
-
-        function listenForMessages() {
-            messagesRef.limitToLast(100).on('child_added', snapshot => {
-                const message = snapshot.val();
-                if (!message) return;
-
-                const user = auth.currentUser;
-                
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('message');
-                
-                const textElement = document.createElement('span');
-                textElement.textContent = message.text;
-
-                // Определяем, наше сообщение или чужое, и добавляем классы
-                if (user && user.email === message.email) {
-                    messageElement.classList.add('sent');
-                } else {
-                    messageElement.classList.add('received');
-                    const usernameElement = document.createElement('span');
-                    usernameElement.classList.add('username');
-                    usernameElement.textContent = message.email.split('@')[0]; // Показываем имя пользователя без домена
-                    messageElement.appendChild(usernameElement);
-                }
-                
-                messageElement.appendChild(textElement);
-                chatWindow.appendChild(messageElement);
-                
-                // Автоматическая прокрутка вниз к последнему сообщению
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-            });
         }
+
+        async function leaveVideoCall() {
+            localAudioTrack?.close();
+            localVideoTrack?.close();
+            
+            // Удаляем всех удаленных пользователей из DOM
+            for (const remoteUser of agoraClient?.remoteUsers || []) {
+                document.getElementById(`player-wrapper-${remoteUser.uid}`)?.remove();
+            }
+
+            if(agoraClient) await agoraClient.leave();
+
+            videosContainer.style.display = 'none';
+            localPlayerContainer.innerHTML = '';
+            
+            joinVideoBtn.textContent = '📞 Войти в общий видеочат';
+            joinVideoBtn.classList.remove('btn-leave');
+            isVideoJoined = false;
+        }
+
+        async function handleUserPublished(user, mediaType) {
+            await agoraClient.subscribe(user, mediaType);
+            if (mediaType === 'video') {
+                let remoteContainer = document.getElementById(`player-wrapper-${user.uid}`);
+                if (!remoteContainer) {
+                    remoteContainer = document.createElement('div');
+                    remoteContainer.id = `player-wrapper-${user.uid}`;
+                    remoteContainer.className = 'video-player';
+                    videosContainer.append(remoteContainer);
+                }
+                user.videoTrack.play(remoteContainer);
+            }
+            if (mediaType === 'audio') user.audioTrack.play();
+        }
+        function handleUserUnpublished(user) { document.getElementById(`player-wrapper-${user.uid}`)?.remove(); }
+        
+        // --- Логика Текстового Чата ---
+        function listenForMessages() { /* ... код без изменений ... */ }
+        chatForm.addEventListener('submit', (e) => { /* ... код без изменений ... */ });
+        function displayMessage(message) { /* ... код без изменений ... */ }
+        function createExplosionParticles(container) { /* ... код без изменений ... */ }
+        
+        // --- Полный код функций текстового чата для копирования ---
+        function listenForMessages() { if (messagesListener) messagesListener.off(); messagesListener = messagesRef.limitToLast(100); chatWindow.innerHTML = ''; messagesListener.on('child_added', s => { if(s.val()) displayMessage(s.val()); }); }
+        chatForm.addEventListener('submit', (e) => { e.preventDefault(); const rawMessage = messageInput.value.trim(); const user = auth.currentUser; if (!rawMessage || !user) return; let messageText = rawMessage, messageEffect = 'none'; const parts = rawMessage.split(' '); const command = parts[0].toLowerCase(); if (command === '.взрыв') { messageEffect = 'explosion'; messageText = parts.slice(1).join(' '); } if (messageText) { messagesRef.push({ text: messageText, effect: messageEffect, email: user.email }); messageInput.value = ''; } });
+        function displayMessage(message) { const user = auth.currentUser, messageElement = document.createElement('div'), textElement = document.createElement('span'); messageElement.className = 'message'; textElement.textContent = message.text; if (user && user.email === message.email) messageElement.classList.add('sent'); else { messageElement.classList.add('received'); const usernameElement = document.createElement('span'); usernameElement.className = 'username'; usernameElement.textContent = message.email.split('@')[0]; messageElement.appendChild(usernameElement); } messageElement.appendChild(textElement); chatWindow.appendChild(messageElement); chatWindow.scrollTop = chatWindow.scrollHeight; if (message.effect === 'explosion') { bodyElement.classList.add('effect-shake-window'); setTimeout(() => bodyElement.classList.remove('effect-shake-window'), 400); messageElement.classList.add('flash'); setTimeout(() => messageElement.classList.remove('flash'), 500); createExplosionParticles(messageElement); } }
+        function createExplosionParticles(containerElement) { const particleContainer = document.createElement('div'); particleContainer.classList.add('particle-container'); containerElement.appendChild(particleContainer); const particlesCount = 30; const colors = ['#FFC700', '#FF7A00', '#FFFFFF', '#808080']; for (let i = 0; i < particlesCount; i++) { const particle = document.createElement('div'); particle.classList.add('particle'); const x = (Math.random() - 0.5) * 2 * 150, y = (Math.random() - 0.5) * 2 * 150; const color = colors[Math.floor(Math.random() * colors.length)]; const size = Math.random() * 5 + 2; particle.style.setProperty('--x', `${x}px`); particle.style.setProperty('--y', `${y}px`); particle.style.background = color; particle.style.width = `${size}px`; particle.style.height = `${size}px`; particleContainer.appendChild(particle); } setTimeout(() => { particleContainer.remove(); }, 1000); }
+
     </script>
 </body>
 </html>
