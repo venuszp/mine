@@ -3,644 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ULTIMATE Кейс-Симулятор v6.1 (Финальный Дизайн)</title>
-    
+    <title>Космический Чат</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* ================================================= */
-        /* == 1. CSS: Общий Дизайн, Вкладки и Анимации   == */
-        /* ================================================= */
+        /* --- CSS переменные для легкой настройки --- */
         :root {
-            --main-bg: #11111d; 
-            --panel-bg: #1c1c36;
-            --card-color: #2b2b4a;
-            --accent-color: #00e5ff; 
-            --hover-color: #00ffff;
-            --shadow-color: rgba(0, 229, 255, 0.4);
-            --item-size: 100px;
-            --legendary-color: #ff00ff; 
-            --rare-color: gold; 
-            --epic-color: #9b59b6; 
-            --currency-color: #2ecc71; 
-            --ultra-color: #e74c3c; 
-            --risk-color: #FFA500; 
-            --quick-open-color: #3498db; 
-            --sell-base: #e74c3c; 
-            --sell-hover: #ff6347; 
+            --text-color: #f0f0f0;
+            --accent-color: #0084ff;
+            --glass-bg: rgba(0, 0, 0, 0.3);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-color: rgba(0, 0, 0, 0.37);
+        }
+
+        /* --- Базовые стили и анимированный фон --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            background: var(--main-bg);
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px;
-            min-height: 100vh;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-color);
             margin: 0;
-            opacity: 0; 
-            transition: opacity 1s ease-in-out;
-            position: relative; /* Для позиционирования версии */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Чтобы фон не вылезал за пределы */
         }
-        
-        /* СКРЫТАЯ ВЕРСИЯ В УГЛУ */
-        body::after {
-            content: "v6.1";
+
+        #background-animation {
             position: fixed;
-            bottom: 5px;
-            right: 10px;
-            font-size: 0.8em;
-            color: rgba(255, 255, 255, 0.15); /* Еле видно */
-            pointer-events: none;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            /* Те самые космические цвета */
+            background: linear-gradient(-45deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 400% 400%;
+            /* Ключевая анимация "плавающего" градиента */
+            animation: gradientAnimation 15s ease infinite;
         }
 
-        body.loaded {
-            opacity: 1;
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        .main-container {
-            width: 1200px; 
-            background: var(--panel-bg);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+        /* --- Контейнер в стиле "матового стекла" (Glassmorphism) --- */
+        .glass-container {
+            width: 100%;
+            max-width: 420px;
             padding: 30px;
+            background: var(--glass-bg);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 var(--shadow-color);
+            /* Магия размытия фона */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        h2 { text-align: center; margin-bottom: 25px; font-weight: 600; }
+        
+        /* --- Стили для форм (вход, регистрация) --- */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.9em; opacity: 0.8; }
+        input[type="email"], input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1em;
+            transition: all 0.2s ease;
+        }
+        input::placeholder { color: rgba(255, 255, 255, 0.5); }
+        input:focus {
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+
+        .btn {
+            display: block; width: 100%; padding: 14px; background-color: var(--accent-color); color: white;
+            border: none; border-radius: 8px; cursor: pointer; text-align: center; text-decoration: none;
+            font-size: 1em; font-weight: 600; transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        .btn:hover { background-color: #0073e6; }
+        .btn:active { transform: scale(0.98); }
+
+        .link { color: var(--accent-color); text-decoration: none; cursor: pointer; font-weight: 600; }
+        .link:hover { text-decoration: underline; }
+        .text-center { text-align: center; margin-top: 20px; font-size: 0.9em; }
+        .error-message { color: #ff8a8a; text-align: center; margin-bottom: 15px; min-height: 1.2em; }
+
+        /* --- Стили для страницы чата --- */
+        #chat-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;
+        }
+        #chat-header h2 { margin: 0; }
+        
+        #chat-window {
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Тот самый "воздух" между сообщениями */
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        /* Стилизация скроллбара */
+        #chat-window::-webkit-scrollbar { width: 6px; }
+        #chat-window::-webkit-scrollbar-track { background: transparent; }
+        #chat-window::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
+        #chat-window::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+
+        #chat-form { display: flex; gap: 10px; }
+        #message-input { flex-grow: 1; }
+        #send-button { width: auto; padding: 12px 20px; }
+        
+        /* --- Магия для "бабблов" сообщений --- */
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            word-wrap: break-word;
+            line-height: 1.4;
+            animation: fadeIn 0.4s ease-out;
         }
         
-        .logo {
-            font-family: 'Impact', sans-serif;
-            font-size: 2.5em;
-            color: var(--accent-color);
-            text-shadow: 0 0 10px var(--shadow-color);
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .logo:hover {
-            transform: scale(1.05);
-        }
-
-        h2 {
-            color: var(--accent-color);
-            border-bottom: 2px solid var(--card-color);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        /* Навигация (Вкладки) */
-        .tabs {
-            display: flex;
-            margin-bottom: 30px;
-        }
-        .tab-button {
-            background: var(--card-color);
-            border: none;
-            padding: 15px 35px;
-            color: #ccc;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: color 0.3s, background 0.3s;
-            border-radius: 10px 10px 0 0;
-            margin-right: 5px;
-        }
-        .tab-button.active {
-            background: #3e3e68;
-            color: var(--accent-color);
-            font-weight: bold;
-            box-shadow: inset 0 3px 0 var(--accent-color);
-        }
-
-        /* АНИМАЦИЯ ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК */
-        .tab-content {
-            display: none;
-            padding: 20px 0;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-            min-height: 400px; 
-        }
-        .tab-content.active {
+        .message .username {
+            font-size: 0.75em;
+            font-weight: 600;
             display: block;
-        }
-        .tab-content.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* HEADER & BALANCE */
-        .header-info {
-            width: 100%;
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 30px;
-        }
-        .balance-display {
-            font-size: 1.8em;
-            color: var(--rare-color);
-            background: var(--card-color);
-            padding: 10px 25px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-        }
-
-        /* ==================== Секция Лобби Кейсов ==================== */
-        .case-lobby {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 30px;
-        }
-
-        .case-lobby-card {
-            width: 250px;
-            background: var(--card-color);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s, opacity 0.5s;
-            border: 2px solid transparent;
-            opacity: 0; 
-            animation: fadeInItem 0.5s ease-out forwards;
+            margin-bottom: 4px;
+            opacity: 0.8;
         }
         
-        .case-lobby-card:nth-child(1) { animation-delay: 0s; }
-        .case-lobby-card:nth-child(2) { animation-delay: 0.1s; }
-        .case-lobby-card:nth-child(3) { animation-delay: 0.2s; }
-        .case-lobby-card:nth-child(4) { animation-delay: 0.3s; }
-        .case-lobby-card:nth-child(5) { animation-delay: 0.4s; }
-        .case-lobby-card:nth-child(6) { animation-delay: 0.5s; }
-        .case-lobby-card:nth-child(7) { animation-delay: 0.6s; }
-
-        .case-lobby-card.fade-out {
-            opacity: 0 !important;
-            transform: scale(0.9);
-        }
-
-        .case-lobby-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 10px var(--accent-color);
-        }
-
-        .case-lobby-card h3 {
-            margin: 5px 0 10px 0;
-            font-size: 1.4em;
-        }
-
-        .case-lobby-card .icon {
-            font-size: 50px;
-            margin-top: 10px;
-        }
-
-        /* Цветовая схема для лобби */
-        .case-lobby-card[data-case-id="currency"] { border-color: var(--currency-color); }
-        .case-lobby-card[data-case-id="vip"] { border-color: var(--legendary-color); }
-        .case-lobby-card[data-case-id="ultra"] { border-color: var(--ultra-color); }
-        .case-lobby-card[data-case-id="chaos"] { border-color: var(--epic-color); }
-        .case-lobby-card[data-case-id="cosmic"] { border-color: var(--rare-color); } 
-        .case-lobby-card[data-case-id="risk"] { border-color: var(--risk-color); } 
-
-
-        /* ==================== Детальный Вид Кейса ==================== */
-        .case-detail-view {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .case-detail-view.active {
-            display: flex;
-        }
-
-        /* КНОПКА НАЗАД (Улучшенный дизайн) */
-        .case-detail-header {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 0 20px;
-        }
-
-        #back-to-lobby-btn {
-            background: var(--card-color);
-            color: white;
-            border: 1px solid #4a4a75;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
-            font-weight: bold;
-        }
-        #back-to-lobby-btn:hover {
-            background: #3e3e68;
-            transform: translateX(-5px) scale(1.05);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        /* Сообщение ДРУГОГО пользователя (received) */
+        .message.received {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 18px 18px 18px 5px; /* Хвостик слева внизу */
         }
         
-        /* Управление рулетками */
-        #roll-area-container {
-            width: 100%;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin: 30px 0;
-            min-height: 150px; 
-        }
-        
-        .roll-area {
-            width: 700px; 
-            height: calc(var(--item-size) + 20px); 
-            overflow: hidden; 
-            position: relative;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7);
-        }
-        
-        .roll-area.small {
-            width: 220px;
-            height: 60px;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-        }
-        
-        .roll-area::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 0;
-            height: 100%;
-            width: 6px;
-            background: #ff4d4d; 
-            z-index: 10;
-            transform: translateX(-50%);
-            box-shadow: 0 0 15px #ff4d4d;
-        }
-
-        .item-strip {
-            position: absolute; left: 0; transition: transform 0s; display: flex; 
-        }
-        
-        .item-strip.rolling-animate { transition: transform 4s cubic-bezier(0.1, 0.8, 0.3, 1); }
-
-        /* КАРТОЧКА ПРЕДМЕТА */
-        .item-card {
-            min-width: var(--item-size);
-            height: var(--item-size);
-            background: #4a4a75;
-            margin: 5px;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.8em;
-            text-align: center;
-            user-select: none;
-            flex-shrink: 0;
-            border: 2px solid transparent;
-            transition: box-shadow 0.3s;
-        }
-
-        /* УВЕЛИЧЕНИЕ ИКОНКИ ДЛЯ БОЛЬШОЙ РУЛЕТКИ */
-        .item-card .item-card-icon {
-            font-size: 40px; 
-            margin-bottom: 5px;
-            line-height: 1;
-        }
-
-        /* АДАПТАЦИЯ ДЛЯ МАЛЕНЬКОЙ РУЛЕТКИ (x10) */
-        .roll-area.small .item-strip { top: -20px; }
-        .roll-area.small .item-strip .item-card { min-width: 60px; height: 60px; margin: 0 2px; padding: 0; justify-content: center; font-size: 0.6em; line-height: 1.1; }
-        .roll-area.small .item-strip .item-card .item-card-icon { font-size: 25px; margin-bottom: 0; }
-        
-        /* ==================== ПОДСВЕТКА РЕДКОСТИ ==================== */
-
-        /* Редкие иконки/карточки в инвентаре и шансах */
-        .inventory-item.rare, 
-        .chance-item.rare .rarity-name,
-        .item-card.rare {
-            box-shadow: 0 0 12px rgba(255, 215, 0, 0.6), 0 0 4px var(--rare-color);
-        }
-        
-        .inventory-item.epic,
-        .chance-item.epic .rarity-name,
-        .item-card.epic {
-            box-shadow: 0 0 12px rgba(155, 89, 182, 0.7), 0 0 4px var(--epic-color);
-        }
-        
-        .inventory-item.legendary,
-        .chance-item.legendary .rarity-name,
-        .item-card.legendary {
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.8), 0 0 5px var(--legendary-color);
-        }
-
-        .inventory-item.ultra,
-        .chance-item.ultra .rarity-name,
-        .item-card.ultra {
-            box-shadow: 0 0 18px rgba(231, 76, 60, 0.9), 0 0 6px var(--ultra-color);
-            animation: ultraGlow 1s infinite alternate;
-        }
-
-        @keyframes ultraGlow {
-            0% { box-shadow: 0 0 10px var(--ultra-color); }
-            100% { box-shadow: 0 0 25px var(--ultra-color), 0 0 5px #fff; }
-        }
-
-        /* ==================== ЭФФЕКТ БЛЕСКА КНОПОК И УПРАВЛЕНИЕ ==================== */
-        .case-buttons-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 700px; 
-        }
-        
-        .quick-open-toggle-container {
-            margin-bottom: 15px;
-            background: var(--card-color);
-            padding: 8px 15px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            border: 1px solid #4a4a75;
-            transition: box-shadow 0.3s;
-        }
-        
-        .quick-open-toggle-container:hover {
-            box-shadow: 0 0 10px var(--accent-color);
-        }
-
-        .case-buttons-group {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            width: 100%;
-        }
-
-        .open-case-btn {
-            position: relative; 
-            overflow: hidden;
-            z-index: 1; 
-            
+        /* Сообщение ТЕКУЩЕГО пользователя (sent) */
+        .message.sent {
+            align-self: flex-end;
             background: var(--accent-color);
-            color: var(--main-bg);
-            border: none;
-            padding: 12px 30px;
-            font-size: 1.1em;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.3s;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            
-            width: 30%; 
+            color: white;
+            border-radius: 18px 18px 5px 18px; /* Хвостик справа внизу */
         }
-        
-        .open-case-btn.pack-open-btn {
-            background: var(--currency-color);
-            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.5);
-        }
+        .message.sent .username { color: rgba(255, 255, 255, 0.8); }
 
-        .open-case-btn:hover {
-            transform: scale(1.03); 
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
-        /* БЛЕСК */
-        .open-case-btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -200%; 
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                to right, 
-                rgba(255, 255, 255, 0) 0%, 
-                rgba(255, 255, 255, 0.5) 50%, 
-                rgba(255, 255, 255, 0) 100%
-            );
-            transform: skewX(-20deg); 
-            transition: all 0.3s;
-            z-index: 2;
-        }
-
-        /* АНИМАЦИЯ БЛЕСКА */
-        .open-case-btn:hover::after {
-            left: 200%; 
-            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        
-        .open-case-btn:disabled { background: #555; cursor: not-allowed; box-shadow: none; transform: scale(1); }
-
-
-        /* Стили для переключателя */
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; margin-left: 10px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent-color); }
-        input:focus + .slider { box-shadow: 0 0 1px var(--accent-color); }
-        input:checked + .slider:before { transform: translateX(20px); }
-        
-        /* Инвентарь: Продать все */
-        #sell-all-btn {
-            background: #cc4444;
-            box-shadow: 0 4px 10px rgba(204, 68, 68, 0.5);
-            transition: background 0.3s, transform 0.2s;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-left: 20px;
-        }
-        #sell-all-btn:hover {
-            background: #ff5555;
-            transform: scale(1.05);
-        }
-
-
-        /* ... Остальные стили ... */
-        .common { background: linear-gradient(135deg, #444, #333); color: #ccc; }
-        .rare { background: linear-gradient(135deg, #7d7d00, #4a4a75); color: var(--rare-color); }
-        .epic { background: linear-gradient(135deg, #5f3c5f, #4a4a75); color: var(--epic-color); }
-        .legendary { background: radial-gradient(circle at 70% 30%, #ff00ff, #3c5f5f); color: var(--legendary-color); }
-        .ultra { background: radial-gradient(circle at 70% 30%, #e74c3c, #3c235f); color: var(--ultra-color); }
-        #notification-container { position: fixed; top: 20px; right: 20px; z-index: 1000; }
-        .notification { background: #2ecc71; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); margin-bottom: 10px; opacity: 0; transform: translateX(100%); transition: opacity 0.5s ease-out, transform 0.5s ease-out; max-width: 300px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; }
-        .notification .count { background: rgba(0, 0, 0, 0.2); padding: 2px 8px; border-radius: 50%; margin-left: 10px; font-size: 0.9em; font-weight: bold; }
-        .notification.error { background: #e74c3c; }
-        .notification.show { opacity: 1; transform: translateX(0); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--panel-bg); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); text-align: center; transform: scale(0.8); opacity: 0; transition: all 0.3s ease-in-out; max-width: 400px; }
-        .modal-overlay.active .modal-content { transform: scale(1); opacity: 1; }
-        .modal-buttons button { padding: 10px 20px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #confirm-sell-btn { background: var(--sell-base); color: white; }
-        #cancel-sell-btn { background: #555; color: white; }
-        .inventory-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 10px; }
-        .inventory-list { display: flex; flex-wrap: wrap; gap: 20px; padding: 10px; }
-        .inventory-item { width: 140px; background: var(--card-color); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); opacity: 0; transform: translateY(10px); animation: fadeInItem 0.5s ease-out forwards; }
-        @keyframes fadeInItem { to { opacity: 1; transform: translateY(0); } }
-        .sell-btn { background: var(--sell-base); color: white; border: none; padding: 8px 15px; margin-top: 10px; border-radius: 5px; cursor: pointer; font-size: 0.9em; width: 100%; transition: background 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
-        .sell-btn:hover { background: var(--sell-hover); box-shadow: 0 0 15px rgba(255, 99, 71, 0.8); }
-        #corner-overlay { position: fixed; top: 20px; left: 20px; width: 250px; height: 120px; background: rgba(43, 43, 74, 0.7); backdrop-filter: blur(5px); border-radius: 15px; padding: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); color: #ddd; font-size: 0.9em; z-index: 50; border: 1px solid #4a4a75; transition: opacity 0.5s ease-in-out; }
-        #corner-overlay h4 { margin: 0 0 5px 0; color: var(--accent-color); }
-        
     </style>
 </head>
-<body class="loaded">
-    <div class="modal-overlay" id="sell-modal-overlay">
-        <div class="modal-content">
-            <h3 style="color: #ff4d4d;">Подтверждение продажи</h3>
-            <p id="modal-sell-text"></p>
-            <div class="modal-buttons">
-                <button id="confirm-sell-btn">Продать</button>
-                <button id="cancel-sell-btn">Отмена</button>
+<body>
+
+    <div id="background-animation"></div>
+
+    <div class="glass-container">
+        <div id="loader-page" class="page active">
+            <h2>Подключение к космосу...</h2>
+        </div>
+
+        <div id="login-page" class="page">
+            <h2>Вход</h2>
+            <p id="login-error" class="error-message"></p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Пароль</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn">Войти</button>
+            </form>
+            <div class="text-center">
+                Нет аккаунта? <a href="#" class="link" onclick="showPage('register-page')">Создать</a>
             </div>
+        </div>
+
+        <div id="register-page" class="page">
+            <h2>Регистрация</h2>
+            <p id="register-error" class="error-message"></p>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Пароль</label>
+                    <input type="password" id="register-password" required>
+                </div>
+                <button type="submit" class="btn">Зарегистрироваться</button>
+            </form>
+            <div class="text-center">
+                Уже есть аккаунт? <a href="#" class="link" onclick="showPage('login-page')">Войти</a>
+            </div>
+        </div>
+
+        <div id="chat-page" class="page">
+            <div id="chat-header">
+                <h2>Общий чат</h2>
+                <a href="#" class="link" id="logout-button">Выйти</a>
+            </div>
+            <div id="chat-window">
+                </div>
+            <form id="chat-form">
+                <input type="text" id="message-input" placeholder="Ваше сообщение..." autocomplete="off" required>
+                <button type="submit" id="send-button" class="btn">➤</button>
+            </form>
         </div>
     </div>
-    
-    <div id="notification-container"></div>
-    
-    <div class="header-info">
-        <div id="balance" class="balance-display">1000 💎</div>
-    </div>
 
-    <div class="main-container">
-        <div class="logo" id="main-logo">CASE SIMULATOR V6.1</div>
-        
-        <div class="tabs">
-            <button class="tab-button" data-tab="cases">Кейсы</button>
-            <button class="tab-button" data-tab="inventory">Инвентарь</button>
-            <button class="tab-button" data-tab="shop">Магазин</button>
-        </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-        <div id="cases" class="tab-content case-section">
-            
-            <div id="case-lobby-view" class="case-detail-view">
-                <h2>Выбор Кейса</h2>
-                <div class="case-lobby">
-                    <div class="case-lobby-card" data-case-id="basic">
-                        <div class="icon">📦</div>
-                        <h3>Артефакт Судьбы</h3>
-                        <p class="price">100 💎</p>
-                    </div>
-                    
-                    <div class="case-lobby-card" data-case-id="chaos">
-                        <div class="icon" style="color: var(--epic-color);">⚡</div>
-                        <h3 style="color: var(--epic-color);">Энергетический Хаос</h3>
-                        <p class="price">500 💎</p>
-                    </div>
-                    
-                    <div class="case-lobby-card" data-case-id="vip">
-                        <div class="icon" style="color: var(--legendary-color);">🔮</div>
-                        <h3 style="color: var(--legendary-color);">VIP-Элитный</h3>
-                        <p class="price">1000 💎</p>
-                    </div>
-
-                    <div class="case-lobby-card" data-case-id="currency">
-                        <div class="icon" style="color: var(--currency-color);">💵</div>
-                        <h3 style="color: var(--currency-color);">Валютный Клондайк</h3>
-                        <p class="price">2500 💎</p>
-                    </div>
-                    
-                    <div class="case-lobby-card" data-case-id="ultra">
-                        <div class="icon" style="color: var(--ultra-color);">💀</div>
-                        <h3 style="color: var(--ultra-color);">Ультра Смерти</h3>
-                        <p class="price">5000 💎</p>
-                    </div>
-                    
-                    <div class="case-lobby-card" data-case-id="cosmic">
-                        <div class="icon" style="color: var(--rare-color);">🌌</div>
-                        <h3 style="color: var(--rare-color);">Космическое Наследие</h3>
-                        <p class="price">7500 💎</p>
-                    </div>
-                    
-                    <div class="case-lobby-card" data-case-id="risk">
-                        <div class="icon" style="color: var(--risk-color);">⚠️</div>
-                        <h3 style="color: var(--risk-color);">Всё или Ничего</h3>
-                        <p class="price">10000 💎</p>
-                    </div>
-                    
-                </div>
-            </div>
-
-            <div id="case-detail-view" class="case-detail-view">
-                <div class="case-detail-header">
-                    <button id="back-to-lobby-btn">← Назад к выбору</button>
-                    <h2 id="detail-case-name"></h2>
-                    <span></span>
-                </div>
-                
-                <div id="roll-area-container">
-                    </div>
-
-                <div class="case-buttons-controls">
-                    <div class="quick-open-toggle-container">
-                        <label for="quick-open-toggle">Мгновенное открытие (без анимации):</label>
-                        <label class="switch">
-                          <input type="checkbox" id="quick-open-toggle">
-                          <span class="slider"></span>
-                        </label>
-                    </div>
-                    
-                    <div class="case-buttons-group">
-                        <button class="open-case-btn" data-type="animated" data-amount="1">Открыть 1</button>
-                        <button class="open-case-btn pack-open-btn" data-type="animated" data-amount="10">Открыть x10</button>
-                    </div>
-                </div>
-                
-                <div id="status-message" style="margin-top: 35px; font-style: italic; font-size: 1.1em;"></div>
-
-                <div class="case-info">
-                    <div class="chances-list">
-                        <h4>Шансы выпадения:</h4>
-                        <div id="chances-content"></div>
-                    </div>
-                    <div class="chances-list">
-                        <h4>Содержимое кейса:</h4>
-                        <div id="items-content"></div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <div id="inventory" class="tab-content">
-            <div class="inventory-top-bar">
-                <h2>Ваши Предметы</h2>
-                <div>
-                    <button id="sell-all-btn" class="open-case-btn" style="width: auto; margin: 0; box-shadow: none;">Продать Всё</button>
-                    <div class="toggle-switch-container" style="display: inline-flex; margin-left: 20px;">
-                        <label for="sell-confirm-toggle">Мгновенная продажа:</label>
-                        <label class="switch">
-                          <input type="checkbox" id="sell-confirm-toggle">
-                          <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="inventory-list" class="inventory-list">
-                <p style="padding: 20px;">Инвентарь пуст. Откройте кейс!</p>
-            </div>
-        </div>
-        
-        <div id="shop" class="tab-content" style="text-align: center;">
-            <h2>Магазин</h2>
-            <p>Здесь вы можете пополнить свой баланс.</p>
-            <button id="add-balance-btn" class="buy-button" style="margin-top: 20px; background: #2ecc71; width: 300px;">Пополнить баланс (+500 💎)</button>
-        </div>
-
-    </div>
-
-
-    <script type="module">
-        // ===================================================
-        // == FIREBASE ИНИЦИАЛИЗАЦИЯ И ИМПОРТЫ              ==
-        // ===================================================
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-        import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
-
+    <script>
+        // ВАШИ КЛЮЧИ FIREBASE ИЗ ВОПРОСА
         const firebaseConfig = {
             apiKey: "AIzaSyBTcH3_tri2L7AHLh1e-YD-0s-QSthuE6Q",
             authDomain: "disk-c98ee.firebaseapp.com",
@@ -650,650 +255,114 @@
             appId: "1:59577059636:web:e98f456d054cc360747d61",
             databaseURL: "https://disk-c98ee-default-rtdb.firebaseio.com"
         };
-        
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const USER_ID = "guest_user_123";
-        
-        // --- ФУНКЦИИ БАЗЫ ДАННЫХ (DB) ---
-        
-        async function loadUserData() {
-            try {
-                const snapshot = await get(ref(database, 'users/' + USER_ID));
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    return {
-                        balance: data.balance || 1000,
-                        inventory: Array.isArray(data.inventory) ? data.inventory : (data.inventory ? Object.values(data.inventory) : [])
-                    };
-                } else {
-                    return { balance: 1000, inventory: [] };
-                }
-            } catch (error) {
-                console.error("Ошибка загрузки данных из Firebase:", error);
-                return { balance: 1000, inventory: [] }; 
-            }
-        }
-        
-        function saveUserData(currentBalance, currentInventory) {
-            set(ref(database, 'users/' + USER_ID), {
-                balance: currentBalance,
-                inventory: currentInventory 
-            })
-            .catch((error) => {
-                console.error("Ошибка сохранения данных в Firebase:", error);
-            });
+
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        const auth = firebase.auth();
+        const db = firebase.database();
+        const messagesRef = db.ref('messages');
+
+        const pages = document.querySelectorAll('.page');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const chatForm = document.getElementById('chat-form');
+        const logoutButton = document.getElementById('logout-button');
+        const messageInput = document.getElementById('message-input');
+        const chatWindow = document.getElementById('chat-window');
+
+        function showPage(pageId) {
+            pages.forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
         }
 
-        // ===================================================
-        // == ОСНОВНОЙ КОД СИМУЛЯТОРА                       ==
-        // ===================================================
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            const balanceDisplay = document.getElementById('balance');
-            const inventoryList = document.getElementById('inventory-list');
-            const statusMessage = document.getElementById('status-message');
-            const addBalanceBtn = document.getElementById('add-balance-btn');
-            const sellConfirmToggle = document.getElementById('sell-confirm-toggle');
-            const quickOpenToggle = document.getElementById('quick-open-toggle'); 
-            const sellAllBtn = document.getElementById('sell-all-btn');
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-            const notificationContainer = document.getElementById('notification-container');
-            const totalItemsDisplay = document.getElementById('total-items');
-            const mainLogo = document.getElementById('main-logo');
-            
-            const caseLobbyView = document.getElementById('case-lobby-view');
-            const caseDetailView = document.getElementById('case-detail-view');
-            const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
-            const detailCaseName = document.getElementById('detail-case-name');
-            const chancesContent = document.getElementById('chances-content');
-            const itemsContent = document.getElementById('items-content');
-            const rollAreaContainer = document.getElementById('roll-area-container');
-            const detailOpenButtons = caseDetailView.querySelectorAll('.open-case-btn');
-
-            const sellModalOverlay = document.getElementById('sell-modal-overlay');
-            const modalSellText = document.getElementById('modal-sell-text');
-            const confirmSellBtn = document.getElementById('confirm-sell-btn');
-            const cancelSellBtn = document.getElementById('cancel-sell-btn');
-            let itemToSell = null; 
-            
-            const ANIMATION_DURATION = 4000; 
-            const FINAL_PAUSE_DURATION = 1000; 
-            const ITEM_WIDTH = 110; 
-
-            // --- КОНФИГУРАЦИЯ СИСТЕМЫ ---
-            let balance = 0; 
-            const INVENTORY = []; 
-            let CURRENT_CASE_ID = null;
-
-            const ALL_ITEMS = [
-                // COMMON ITEMS (используются для склейки)
-                { id: 1, name: "Обычный Камень", rarity: 30, icon: '⚪', class: 'common', sell: 10 },
-                { id: 2, name: "Ржавый Ключ", rarity: 25, icon: '🔑', class: 'common', sell: 15 },
-                { id: 3, name: "Редкая Ячейка", rarity: 25, icon: '🔋', class: 'rare', sell: 50 },
-                { id: 4, name: "Эпический Кристалл", rarity: 15, icon: '💎', class: 'epic', sell: 150 },
-                { id: 5, name: "ЛЕГЕНДАРНЫЙ Артефакт", rarity: 5, icon: '✨', class: 'legendary', sell: 500 },
-                
-                // BASIC
-                { id: 1, case: 'basic' }, { id: 2, case: 'basic' }, { id: 3, case: 'basic' }, { id: 4, case: 'basic' }, { id: 5, case: 'basic' },
-
-                // CHAOS (Новый - Эпический фокус)
-                { id: 2, case: 'chaos', rarity: 15 },
-                { id: 3, case: 'chaos', rarity: 30 },
-                { id: 4, case: 'chaos', rarity: 40 },
-                { id: 5, case: 'chaos', rarity: 15 },
-
-                // VIP
-                { id: 6, name: "Редкий VIP Ключ", rarity: 30, icon: '🔑', class: 'rare', sell: 150, case: 'vip' },
-                { id: 7, name: "Эпический Свиток", rarity: 40, icon: '📜', class: 'epic', sell: 500, case: 'vip' },
-                { id: 8, name: "ЛЕГЕНДАРНЫЙ Катализатор", rarity: 25, icon: '⚛️', class: 'legendary', sell: 1200, case: 'vip' },
-                { id: 9, name: "МИФИЧЕСКИЙ Жезл Власти", rarity: 5, icon: '👑', class: 'legendary', sell: 5000, case: 'vip' },
-
-                // CURRENCY
-                { id: 10, name: "100 💎", rarity: 50, icon: '💸', class: 'common', sell: 100, case: 'currency' },
-                { id: 11, name: "500 💎", rarity: 30, icon: '💵', class: 'rare', sell: 500, case: 'currency' },
-                { id: 12, name: "2000 💎", rarity: 15, icon: '💰', class: 'epic', sell: 2000, case: 'currency' },
-                { id: 13, name: "10000 💎", rarity: 5, icon: '🪙', class: 'legendary', sell: 10000, case: 'currency' },
-
-                // ULTRA
-                { id: 14, name: "Кристалл Эпох", rarity: 40, icon: '🔴', class: 'epic', sell: 1000, case: 'ultra' },
-                { id: 15, name: "Черная Материя", rarity: 30, icon: '⚫', class: 'legendary', sell: 5000, case: 'ultra' },
-                { id: 16, name: "Ядро Бесконечности", rarity: 25, icon: '♾️', class: 'legendary', sell: 15000, case: 'ultra' },
-                { id: 17, name: "Ультра-Шлем Судьбы", rarity: 5, icon: '🛡️', class: 'ultra', sell: 50000, case: 'ultra' },
-                
-                // COSMIC (Гарантия Легендарных+)
-                { id: 15, case: 'cosmic', rarity: 35 }, 
-                { id: 16, case: 'cosmic', rarity: 45 }, 
-                { id: 17, case: 'cosmic', rarity: 20 }, 
-                
-                // RISK (Все или Ничего)
-                { id: 18, name: "Пустой Фантом", rarity: 95, icon: '👻', class: 'common', sell: 0, case: 'risk' },
-                { id: 19, name: "Джекпот (x5 Артефактов)", rarity: 5, icon: '🎰', class: 'ultra', sell: 50000, case: 'risk' },
-            ];
-            
-            const ITEM_PROPERTIES = ALL_ITEMS.filter(item => item.name);
-
-            const CASES = {
-                basic: { name: 'Артефакт Судьбы', price: 100, icon: '📦' },
-                chaos: { name: 'Энергетический Хаос', price: 500, icon: '⚡' },
-                vip: { name: 'VIP-Элитный', price: 1000, icon: '🔮' },
-                currency: { name: 'Валютный Клондайк', price: 2500, icon: '💵' },
-                ultra: { name: 'Ультра Смерти', price: 5000, icon: '💀' },
-                cosmic: { name: 'Космическое Наследие', price: 7500, icon: '🌌' },
-                risk: { name: 'Всё или Ничего', price: 10000, icon: '⚠️' }
-            };
-
-            // --- ФУНКЦИИ ИНТЕРФЕЙСА И ЛОГИКИ (сокращены) ---
-            
-            // ФИКС: Корректное получение полных данных предмета (ОБЪЕДИНЕНИЕ)
-            function getItemFullData(itemRef) {
-                const itemProps = ITEM_PROPERTIES.find(p => p.id === itemRef.id);
-                // Это гарантирует, что специфические для кейса rarity и class переопределят общие, но сохранят все другие свойства (name, icon, sell).
-                return { ...itemProps, ...itemRef }; 
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                showPage('chat-page');
+                listenForMessages();
+            } else {
+                showPage('login-page');
             }
-
-            function showNotification(message, type = 'success', duration = 3000) {
-                const cleanMessage = message.split(' x')[0];
-                const existingNote = Array.from(notificationContainer.children).find(note => note.textContent.startsWith(cleanMessage));
-
-                if (existingNote) {
-                    let count = parseInt(existingNote.dataset.count || 1) + 1;
-                    existingNote.dataset.count = count;
-                    let span = existingNote.querySelector('.count');
-                    if (!span) { span = document.createElement('span'); span.className = 'count'; existingNote.appendChild(span); }
-                    span.textContent = `x${count}`;
-                    clearTimeout(existingNote.timer);
-                    existingNote.timer = setTimeout(() => { existingNote.classList.remove('show'); setTimeout(() => { existingNote.remove(); }, 500); }, duration);
-                    return;
-                }
-                
-                const note = document.createElement('div');
-                note.className = `notification ${type}`;
-                note.textContent = cleanMessage; 
-                note.dataset.count = 1;
-                notificationContainer.prepend(note);
-                setTimeout(() => { note.classList.add('show'); }, 10); 
-                note.timer = setTimeout(() => {
-                    note.classList.remove('show');
-                    setTimeout(() => { note.remove(); }, 500); 
-                }, duration);
-            }
-
-            function updateBalance() {
-                balanceDisplay.textContent = `${balance} 💎`;
-                saveUserData(balance, INVENTORY); // СОХРАНЕНИЕ: После изменения баланса
-            }
-
-            function updateInventoryCount() {
-                totalItemsDisplay.textContent = `Предметов в инвентаре: ${INVENTORY.length}`;
-            }
-
-            function renderInventory() {
-                inventoryList.innerHTML = ''; 
-                if (INVENTORY.length === 0) {
-                    inventoryList.innerHTML = '<p style="width: 100%; text-align: center; padding: 20px;">Инвентарь пуст. Откройте кейс!</p>';
-                    updateInventoryCount();
-                    return;
-                }
-
-                INVENTORY.forEach((item, index) => {
-                    const itemElement = document.createElement('div');
-                    itemElement.className = `inventory-item ${item.class}`;
-                    itemElement.style.animationDelay = `${index * 0.05}s`; 
-                    itemElement.innerHTML = `<div class="item-card-icon">${item.icon}</div><div class="item-name">${item.name}</div><button class="sell-btn" data-unique-id="${item.uniqueId}">Продать за ${item.sell} 💎</button>`;
-                    inventoryList.appendChild(itemElement);
-                });
-
-                inventoryList.querySelectorAll('.sell-btn').forEach(button => {
-                    button.addEventListener('click', prepareSellItem);
-                });
-                
-                updateInventoryCount();
-            }
-
-            // КНОПКА ПРОДАТЬ ВСЁ
-            sellAllBtn.addEventListener('click', sellAllItems);
-            
-            function sellAllItems() {
-                if (INVENTORY.length === 0) {
-                    showNotification("Инвентарь пуст!", 'error');
-                    return;
-                }
-                
-                let totalSold = 0;
-                let totalValue = 0;
-                
-                INVENTORY.forEach(item => {
-                    totalValue += item.sell;
-                    totalSold++;
-                });
-                
-                balance += totalValue;
-                INVENTORY.length = 0; 
-                
-                updateBalance(); 
-                renderInventory();
-                showNotification(`Продано ${totalSold} предметов. (+${totalValue} 💎)`, 'success', 5000);
-            }
-            // /КНОПКА ПРОДАТЬ ВСЁ
-
-            function prepareSellItem(event) {
-                const uniqueId = event.target.dataset.uniqueId;
-                const indexToRemove = INVENTORY.findIndex(item => item.uniqueId === parseFloat(uniqueId));
-                if (indexToRemove === -1) return;
-                itemToSell = INVENTORY[indexToRemove]; 
-                if (sellConfirmToggle.checked) { performSell(); } 
-                else { modalSellText.innerHTML = `Вы собираетесь продать **<span style="color: ${itemToSell.class === 'legendary' ? 'var(--legendary-color)' : itemToSell.class === 'rare' || itemToSell.class === 'epic' ? 'var(--rare-color)' : 'white'};">${itemToSell.name}</span>** за ${itemToSell.sell} 💎. Продолжить?`; sellModalOverlay.classList.add('active'); }
-            }
-
-            function performSell() {
-                const indexToRemove = INVENTORY.findIndex(item => item.uniqueId === itemToSell.uniqueId);
-                if (indexToRemove !== -1) {
-                    balance += itemToSell.sell;
-                    INVENTORY.splice(indexToRemove, 1); 
-                    updateBalance(); 
-                    renderInventory();
-                    showNotification(`Продано: ${itemToSell.name} (+${itemToSell.sell} 💎)`, 'success');
-                }
-                itemToSell = null; 
-                sellModalOverlay.classList.remove('active');
-            }
-            
-            confirmSellBtn.addEventListener('click', performSell);
-            cancelSellBtn.addEventListener('click', () => {
-                sellModalOverlay.classList.remove('active');
-                itemToSell = null;
-            });
-            
-            function getRandomItem(caseId) {
-                const caseItemsRaw = ALL_ITEMS.filter(item => item.case === caseId);
-                const caseItems = caseItemsRaw.map(getItemFullData);
-                
-                const totalRarity = caseItems.reduce((sum, item) => sum + item.rarity, 0);
-                let randomNumber = Math.random() * totalRarity;
-
-                for (const item of caseItems) {
-                    randomNumber -= item.rarity;
-                    if (randomNumber <= 0) { return item; }
-                }
-                return caseItems[0];
-            }
-
-            function generateStrip(itemStripElement, winningItem, isSmall = false) {
-                itemStripElement.innerHTML = '';
-                
-                const stripItems = [];
-                for (let i = 0; i < 50; i++) { stripItems.push(getRandomItem(winningItem.case)); }
-                stripItems.push(winningItem); 
-                for (let i = 0; i < 50; i++) { stripItems.push(getRandomItem(winningItem.case)); }
-                
-                stripItems.forEach(item => { itemStripElement.appendChild(createItemCard(item, isSmall)); });
-            }
-
-            function createItemCard(item, isSmall = false) {
-                const card = document.createElement('div');
-                card.className = `item-card ${item.class}`;
-                card.innerHTML = `<div class="item-card-icon">${item.icon}</div>${isSmall ? '' : item.name}`; 
-                return card;
-            }
-            
-            // --- ЛОГИКА УПРАВЛЕНИЯ ВИДОМ ---
-
-            function goToLobby() {
-                caseDetailView.classList.remove('visible'); 
-                
-                setTimeout(() => {
-                    caseDetailView.classList.remove('active');
-                    caseLobbyView.classList.add('active');
-                    caseLobbyView.classList.add('visible'); 
-                    CURRENT_CASE_ID = null;
-                    statusMessage.textContent = '';
-                }, 400); 
-            }
-
-            function renderCaseDetails(caseId) {
-                CURRENT_CASE_ID = caseId;
-                const caseData = CASES[caseId];
-                const caseItems = ALL_ITEMS.filter(item => item.case === caseId).map(getItemFullData);
-                const totalRarity = caseItems.reduce((sum, item) => sum + item.rarity, 0);
-
-                rollAreaContainer.innerHTML = '';
-                const singleRollArea = createRollAreaElement(caseId, false);
-                rollAreaContainer.appendChild(singleRollArea);
-                
-                detailCaseName.textContent = caseData.name;
-
-                detailOpenButtons.forEach(button => {
-                    const amount = parseInt(button.dataset.amount);
-                    const cost = amount * caseData.price;
-                    button.textContent = `Открыть ${amount === 1 ? '' : 'x'}${amount} (${cost} 💎)`;
-                    button.dataset.price = cost;
-                    button.dataset.caseId = caseId;
-                });
-                
-                // Шансы
-                chancesContent.innerHTML = caseItems.map(item => {
-                    const chance = ((item.rarity / totalRarity) * 100).toFixed(2);
-                    return `<div class="chance-item ${item.class}"><span class="rarity-name">${item.name}</span><span>${chance}%</span></div>`;
-                }).join('');
-                
-                // Содержимое
-                itemsContent.innerHTML = caseItems.map(item => `<div class="inventory-item ${item.class}" style="width: 100px; height: 120px; margin-bottom: 10px;"><div class="item-card-icon">${item.icon}</div><div class="item-name">${item.name}</div><div style="font-size: 0.8em; color: var(--rare-color);">Продать: ${item.sell} 💎</div></div>`).join('');
-
-
-                // Переключение вида (с плавным переходом)
-                const caseLobbyCards = document.querySelectorAll('.case-lobby-card');
-                caseLobbyCards.forEach(card => card.classList.add('fade-out'));
-
-                setTimeout(() => {
-                    caseLobbyView.classList.remove('active');
-                    caseLobbyView.classList.remove('visible'); 
-                    caseLobbyCards.forEach(card => card.classList.remove('fade-out')); 
-
-                    caseDetailView.classList.add('active');
-                    setTimeout(() => {
-                        caseDetailView.classList.add('visible'); 
-                    }, 50);
-                }, 400); 
-
-                // Предварительная генерация рулетки
-                const itemStripElement = singleRollArea.querySelector('.item-strip');
-                const dummyItem = getRandomItem(caseId);
-                generateStrip(itemStripElement, dummyItem, false);
-            }
-            
-            function createRollAreaElement(caseId, isSmall) {
-                const rollArea = document.createElement('div');
-                rollArea.className = `roll-area ${isSmall ? 'small' : ''}`;
-                rollArea.dataset.caseId = caseId;
-                
-                const strip = document.createElement('div');
-                strip.className = 'item-strip';
-                
-                rollArea.appendChild(strip);
-                return rollArea;
-            }
-            
-            // --- ЛОГИКА ОТКРЫТИЯ (Пакеты и Одиночные) ---
-            
-            function handleOpenCase(event) {
-                const button = event.target;
-                const caseId = button.dataset.caseId;
-                let type = button.dataset.type; // animated или quick
-                const amount = parseInt(button.dataset.amount);
-                const caseData = CASES[caseId];
-                const totalCost = parseInt(button.dataset.price);
-
-                if (balance < totalCost) {
-                    showNotification(`Недостаточно средств для открытия x${amount} (${totalCost} 💎)!`, 'error');
-                    return;
-                }
-                
-                // --- СПИСАНИЕ ВАЛЮТЫ И ПРОВЕРКА TOGGLE ---
-                balance -= totalCost;
-                updateBalance();
-                
-                // Переопределяем тип, если включен моментальный toggle И это одиночное открытие
-                if (quickOpenToggle.checked && amount === 1) {
-                    type = 'quick';
-                }
-                // --- КОНЕЦ ФИКСА ---
-
-
-                if (amount > 1 && type === 'animated') {
-                    openAnimatedPack(caseId, amount);
-                } else if (amount > 1 || type === 'quick') {
-                    openQuickPack(caseId, amount);
-                } else {
-                    openSingleCase(caseId, type);
-                }
-            }
-
-            function openSingleCase(caseId, type) {
-                document.querySelectorAll('.open-case-btn').forEach(btn => btn.disabled = true);
-                
-                const winningItemRaw = getRandomItem(caseId);
-                const winningItem = getItemFullData(winningItemRaw); 
-                
-                if (type === 'quick') {
-                    statusMessage.textContent = `Мгновенное открытие кейса "${CASES[caseId].name}"...`;
-                    setTimeout(() => {
-                        completeCaseOpening([winningItem]);
-                    }, 500); 
-                } else {
-                    statusMessage.textContent = `Прокрутка кейса "${CASES[caseId].name}" запущена...`;
-                    const rollArea = rollAreaContainer.querySelector('.roll-area');
-                    runAnimatedOpening(rollArea, winningItem);
-                }
-            }
-            
-            // НОВАЯ ФУНКЦИЯ: Анимированное открытие пачки (10 рулеток)
-            function openAnimatedPack(caseId, amount) {
-                document.querySelectorAll('.open-case-btn').forEach(btn => btn.disabled = true);
-                statusMessage.textContent = `Запускаем ${amount} рулеток одновременно!`;
-                
-                rollAreaContainer.innerHTML = '';
-                let winningItems = [];
-                let rollPromises = [];
-                
-                for (let i = 0; i < amount; i++) {
-                    const winningItemRaw = getRandomItem(caseId);
-                    const winningItem = getItemFullData(winningItemRaw); 
-                    winningItems.push(winningItem);
-                    
-                    const rollArea = createRollAreaElement(caseId, true); // Создаем маленькую рулетку
-                    rollAreaContainer.appendChild(rollArea);
-                    
-                    rollPromises.push(new Promise(resolve => {
-                        setTimeout(() => {
-                            runAnimatedOpening(rollArea, winningItem, true, resolve);
-                        }, i * 50); 
-                    }));
-                }
-                
-                // Ждем завершения всех 10 анимаций
-                Promise.all(rollPromises).then(() => {
-                    // Даем 1 секунду на просмотр всех результатов
-                    setTimeout(() => {
-                        completeCaseOpening(winningItems);
-                    }, FINAL_PAUSE_DURATION); 
-                });
-            }
-
-            // НОВАЯ ФУНКЦИЯ: Быстрое открытие пачки
-            function openQuickPack(caseId, amount) {
-                let winningItems = [];
-                
-                for (let i = 0; i < amount; i++) {
-                    const winningItemRaw = getRandomItem(caseId);
-                    const winningItem = getItemFullData(winningItemRaw); 
-                    winningItems.push(winningItem);
-                }
-                
-                rollAreaContainer.innerHTML = ''; // Очищаем от рулеток
-                statusMessage.textContent = `Мгновенное открытие ${amount}x ${CASES[caseId].name}...`;
-
-                setTimeout(() => {
-                    completeCaseOpening(winningItems);
-                }, 500); 
-            }
-
-            // --- ЛОГИКА АНИМИРОВАННОГО ОТКРЫТИЯ (УНИВЕРСАЛЬНАЯ) ---
-            function runAnimatedOpening(rollArea, winningItem, isSmall = false, resolve) {
-                const itemStrip = rollArea.querySelector('.item-strip');
-                
-                generateStrip(itemStrip, winningItem, isSmall);
-                
-                const currentItemWidth = isSmall ? 64 : ITEM_WIDTH; 
-                
-                const winCard = itemStrip.children[50]; 
-                
-                // 3. Расчет смещения
-                const rollAreaRect = rollArea.getBoundingClientRect();
-                const rollAreaCenter = rollAreaRect.width / 2;
-                const targetOffset = winCard.offsetLeft + (currentItemWidth / 2);
-                const randomOffset = Math.random() * 20 - 10; 
-                const finalOffset = rollAreaCenter - targetOffset + randomOffset;
-                
-                // Шаг A: Сброс transition и transform
-                itemStrip.classList.remove('rolling-animate'); 
-                itemStrip.style.transform = 'translateX(0px)';
-                
-                // Шаг B: Запуск анимации с малой задержкой
-                setTimeout(() => {
-                    itemStrip.classList.add('rolling-animate'); 
-                    itemStrip.style.transform = `translateX(${finalOffset}px)`;
-                }, 10); 
-                
-                // 5. Окончание анимации
-                setTimeout(() => {
-                    rollArea.classList.add('win-flash'); 
-                    
-                    setTimeout(() => {
-                        itemStrip.classList.remove('rolling-animate'); 
-                        rollArea.classList.remove('win-flash');
-                        
-                        if (resolve) {
-                             resolve(); 
-                        } else {
-                            completeCaseOpening([winningItem]);
-                        }
-                    }, FINAL_PAUSE_DURATION); 
-
-                }, ANIMATION_DURATION); 
-            }
-            
-            // --- ЗАВЕРШЕНИЕ ОТКРЫТИЯ (УНИВЕРСАЛЬНАЯ) ---
-            function completeCaseOpening(winningItems) {
-                document.querySelectorAll('.open-case-btn').forEach(btn => btn.disabled = false);
-                
-                // Сбор статистики
-                let totalSell = 0;
-                let notificationMessage = '';
-                
-                if (winningItems.length === 1) {
-                    const item = winningItems[0];
-                    
-                    // --- ЛОГИКА "ВСЁ ИЛИ НИЧЕГО" ---
-                    if (CURRENT_CASE_ID === 'risk' && item.name === "Джекпот (x5 Артефактов)") {
-                        const jackpotItems = [];
-                        for(let i=0; i<5; i++) {
-                            // Легендарный Артефакт
-                            const bonusItem = getItemFullData(ALL_ITEMS.find(i => i.id === 5)); 
-                            jackpotItems.push({ ...bonusItem, uniqueId: Date.now() + Math.random() + i });
-                        }
-                        
-                        INVENTORY.push(...jackpotItems);
-                        statusMessage.innerHTML = `<span style="color: var(--ultra-color); font-weight: bold;">!!! ДЖЕКПОТ !!!</span> Вы выиграли 5 Легендарных Артефактов!`;
-                        showNotification(`!!! ДЖЕКПОТ !!! Выиграно 5 Легенд!`, 'success', 5000);
-
-                    } else if (CURRENT_CASE_ID === 'risk' && item.name === "Пустой Фантом") {
-                        statusMessage.innerHTML = `<span style="color: var(--sell-base); font-weight: bold;">ПРОИГРЫШ!</span> Выпал ${item.name} - Ничего не получено.`;
-                        showNotification(`ПРОИГРЫШ: Ничего не получено.`, 'error', 4000);
-                    
-                    } else { // Стандартный кейс
-                        notificationMessage = `🎉 ВЫИГРЫШ: ${item.name}`;
-                        statusMessage.innerHTML = `**ВЫИГРЫШ!** Выпал: <span style="font-weight: bold; color: ${item.class === 'ultra' ? 'var(--ultra-color)' : item.class === 'legendary' ? 'var(--legendary-color)' : item.class === 'rare' || item.class === 'epic' ? 'var(--rare-color)' : 'white'};">${item.name}</span>!`;
-                        INVENTORY.push({ ...item, uniqueId: Date.now() + Math.random() });
-                        showNotification(notificationMessage, 'success', 4000);
-                    }
-                    // --- КОНЕЦ ЛОГИКИ "ВСЁ ИЛИ НИЧЕГО" ---
-                
-                } else {
-                    // Пачка
-                    winningItems.forEach(item => {
-                         totalSell += item.sell;
-                         INVENTORY.push({ ...item, uniqueId: Date.now() + Math.random() });
-                    });
-                    notificationMessage = `🎉 Выпало ${winningItems.length} предметов.`;
-                    statusMessage.innerHTML = `**ИТОГ x${winningItems.length}:** Выпало ${winningItems.length} предметов. Общая стоимость: <span style="color: var(--rare-color);">${totalSell} 💎</span>.`;
-                    
-                    rollAreaContainer.innerHTML = `<h3 style="color: var(--rare-color);">Открыто ${winningItems.length} кейсов! Проверьте инвентарь!</h3>`;
-                    showNotification(notificationMessage, 'success', 5000);
-                }
-                
-                renderInventory();
-                saveUserData(balance, INVENTORY); // Сохраняем после всех операций
-                
-                // Обновление рулетки для следующего открытия
-                if (CURRENT_CASE_ID) {
-                    const rollArea = createRollAreaElement(CURRENT_CASE_ID, false);
-                    rollAreaContainer.innerHTML = '';
-                    rollAreaContainer.appendChild(rollArea);
-                    generateStrip(rollArea.querySelector('.item-strip'), getRandomItem(CURRENT_CASE_ID), false);
-                }
-            }
-
-            // --- ИНИЦИАЛИЗАЦИЯ ---
-            
-            sellAllBtn.addEventListener('click', sellAllItems);
-            
-            // Настройка слушателей для лобби
-            document.querySelectorAll('.case-lobby-card').forEach(card => {
-                card.addEventListener('click', () => renderCaseDetails(card.dataset.caseId));
-            });
-            
-            // Настройка кнопок открытия в детальном виде
-            detailOpenButtons.forEach(button => {
-                button.addEventListener('click', handleOpenCase);
-            });
-            
-            // Настройка кнопки "Назад" и Логотипа
-            backToLobbyBtn.addEventListener('click', goToLobby);
-            mainLogo.addEventListener('click', goToLobby);
-            
-            // Стандартные обработчики
-            addBalanceBtn.addEventListener('click', () => {
-                balance += 500;
-                updateBalance();
-                showNotification("Баланс пополнен (+500 💎)", 'success');
-            });
-            
-            // Асинхронная инициализация
-            async function initialize() {
-                const userData = await loadUserData();
-                balance = userData.balance;
-                INVENTORY.push(...userData.inventory);
-                
-                tabButtons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        const targetTabId = button.dataset.tab;
-                        tabContents.forEach(content => content.classList.remove('visible'));
-                        setTimeout(() => {
-                            tabContents.forEach(content => content.classList.remove('active'));
-                            tabButtons.forEach(btn => btn.classList.remove('active'));
-                            button.classList.add('active');
-                            const targetContent = document.getElementById(targetTabId);
-                            targetContent.classList.add('active');
-                            setTimeout(() => { targetContent.classList.add('visible'); }, 50);
-                        }, 400); 
-                    });
-                });
-                
-                // --- МГНОВЕННАЯ АКТИВАЦИЯ ПЕРВОЙ ВКЛАДКИ И ЛОББИ ---
-                const caseTab = document.getElementById('cases');
-                const caseTabButton = document.querySelector('.tab-button[data-tab="cases"]');
-                
-                caseTab.classList.add('active');
-                caseTab.classList.add('visible');
-                caseTabButton.classList.add('active');
-                caseLobbyView.classList.add('active'); 
-                caseLobbyView.classList.add('visible'); 
-                
-                updateBalance();
-                renderInventory();
-                document.body.classList.add('loaded');
-
-                // Предварительная генерация рулетки для детального вида (избегаем ошибок)
-                const dummyRollArea = createRollAreaElement('basic', false);
-                document.body.appendChild(dummyRollArea);
-                generateStrip(dummyRollArea.querySelector('.item-strip'), getRandomItem('basic'), false);
-                document.body.removeChild(dummyRollArea);
-            }
-            
-            initialize();
         });
+
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const errorElement = document.getElementById('register-error');
+            errorElement.textContent = '';
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .catch(error => {
+                    errorElement.textContent = 'Ошибка: ' + error.message;
+                });
+        });
+        
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorElement = document.getElementById('login-error');
+            errorElement.textContent = '';
+
+            auth.signInWithEmailAndPassword(email, password)
+                .catch(error => {
+                    errorElement.textContent = 'Неверный email или пароль.';
+                });
+        });
+
+        logoutButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            messagesRef.off(); // Отключаем слушателя сообщений, чтобы не было ошибок
+            auth.signOut();
+        });
+        
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const messageText = messageInput.value.trim();
+            const user = auth.currentUser;
+
+            if (messageText && user) {
+                messagesRef.push({
+                    text: messageText,
+                    email: user.email,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                messageInput.value = '';
+            }
+        });
+
+        function listenForMessages() {
+            messagesRef.limitToLast(100).on('child_added', snapshot => {
+                const message = snapshot.val();
+                if (!message) return;
+
+                const user = auth.currentUser;
+                
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                
+                const textElement = document.createElement('span');
+                textElement.textContent = message.text;
+
+                // Определяем, наше сообщение или чужое, и добавляем классы
+                if (user && user.email === message.email) {
+                    messageElement.classList.add('sent');
+                } else {
+                    messageElement.classList.add('received');
+                    const usernameElement = document.createElement('span');
+                    usernameElement.classList.add('username');
+                    usernameElement.textContent = message.email.split('@')[0]; // Показываем имя пользователя без домена
+                    messageElement.appendChild(usernameElement);
+                }
+                
+                messageElement.appendChild(textElement);
+                chatWindow.appendChild(messageElement);
+                
+                // Автоматическая прокрутка вниз к последнему сообщению
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            });
+        }
     </script>
 </body>
 </html>
