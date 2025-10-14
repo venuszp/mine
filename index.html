@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Общий Видео-Текстовый Чат</title>
+    <title>Админ Чат</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --text-color: #f0f0f0; --accent-color: #0084ff; --glass-bg: rgba(0, 0, 0, 0.35);
+            --text-color: #f0f0f0; --accent-color: #0084ff; --glass-bg: rgba(0, 0, 0, 0.4);
             --glass-border: rgba(255, 255, 255, 0.2); --shadow-color: rgba(0, 0, 0, 0.37);
+            --danger-color: #e74c3c;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -25,7 +26,7 @@
         @keyframes gradientAnimation { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .glass-container {
-            width: 100%; max-width: 550px; padding: 30px; background: var(--glass-bg);
+            width: 100%; max-width: 450px; padding: 30px; background: var(--glass-bg);
             border-radius: 16px; box-shadow: 0 8px 32px 0 var(--shadow-color);
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border); transition: transform 0.1s ease-in-out;
@@ -35,31 +36,41 @@
         h2 { text-align: center; margin-bottom: 25px; font-weight: 600; }
         input { width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.1); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-color); font-family: 'Montserrat', sans-serif; font-size: 1em; }
         .btn { display: block; width: 100%; padding: 14px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; text-align: center; text-decoration: none; font-size: 1em; font-weight: 600; transition: all 0.2s ease; }
-        .btn-secondary { background-color: rgba(255, 255, 255, 0.15); }
-        .btn-leave { background-color: #e74c3c; }
         .link { color: var(--accent-color); text-decoration: none; cursor: pointer; font-weight: 600; }
+        .form-group { margin-bottom: 20px; }
         
         #chat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
-        #chat-window { height: 300px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding: 10px; margin-bottom: 15px; border-radius: 8px; background: rgba(0,0,0,0.1); }
-        .message { max-width: 80%; padding: 10px 15px; word-wrap: break-word; line-height: 1.4; animation: fadeIn 0.4s ease-out; position: relative; overflow: visible !important; }
+        #chat-window { height: 450px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding: 10px; margin-bottom: 15px; border-radius: 8px; background: rgba(0,0,0,0.1); }
+        .message { max-width: 80%; padding: 10px 15px; word-wrap: break-word; line-height: 1.4; animation: fadeIn 0.4s ease-out; position: relative; overflow: visible !important; cursor: pointer; }
         .message .username { font-size: 0.75em; font-weight: 600; display: block; margin-bottom: 4px; opacity: 0.8; }
         .message.received { align-self: flex-start; background: rgba(255, 255, 255, 0.15); border-radius: 18px 18px 18px 5px; }
         .message.sent { align-self: flex-end; background: var(--accent-color); color: white; border-radius: 18px 18px 5px 18px; }
-        
-        /* Стили для видео */
-        #videos-container { display: none; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px; min-height: 100px; }
-        .video-player { width: 100%; height: 90px; background: #000; border-radius: 6px; position: relative; }
-        .video-player video { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
-        
-        /* Анимации эффектов */
-        .effect-shake-window .glass-container { animation: screenShake 0.4s ease-in-out; }
-        @keyframes screenShake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); } 20%, 40%, 60%, 80% { transform: translateX(8px); } }
-        .particle-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-        .particle { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; border-radius: 50%; animation: particle-anim 1s ease-out forwards; }
-        @keyframes particle-anim { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; } }
-        .message.flash { animation: flash-bang 0.5s ease-out; }
-        @keyframes flash-bang { 0% { background-color: white; color: black; box-shadow: 0 0 100px 50px white; } }
+        .message.received .username { color: #a2cffe; }
+        .message.sent .username { color: rgba(255, 255, 255, 0.8); }
+        .username.admin { color: #ffeb3b !important; font-weight: bold; }
+        .username.admin::after { content: ' ★'; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        #admin-context-menu {
+            position: absolute; display: none; z-index: 1000;
+            background: var(--glass-bg); backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); border-radius: 8px;
+            padding: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        #admin-context-menu button {
+            display: block; background: none; border: none; color: var(--text-color);
+            padding: 10px 15px; width: 100%; text-align: left; cursor: pointer;
+            border-radius: 5px; font-family: 'Montserrat', sans-serif;
+        }
+        #admin-context-menu button:hover { background-color: rgba(255, 255, 255, 0.2); }
+        #admin-context-menu button.danger { color: var(--danger-color); }
+
+        #blackout-overlay, #screamer-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999;
+            display: none; justify-content: center; align-items: center;
+        }
+        #blackout-overlay { background-color: black; color: white; font-size: 2em; text-align: center; }
+        #screamer-overlay img { max-width: 100%; max-height: 100%; }
     </style>
 </head>
 <body>
@@ -71,24 +82,54 @@
         <div id="chat-page" class="page">
             <div id="chat-header">
                 <h2>Общий Чат</h2>
-                <a href="#" class="link" id="logout-button">Выйти</a>
+                <div>
+                    <a href="#" class="link" id="settings-btn" style="font-size: 1.5em; text-decoration: none;">⚙️</a>
+                    <a href="#" class="link" id="logout-button" style="margin-left: 15px;">Выйти</a>
+                </div>
             </div>
-            <div id="videos-container">
-                <div id="local-player-container" class="video-player"></div>
-            </div>
-            <button id="join-video-btn" class="btn btn-secondary" style="margin-bottom: 15px;">📞 Войти в общий видеочат</button>
             <div id="chat-window"></div>
             <form id="chat-form">
-                <input type="text" id="message-input" placeholder="Введите .взрыв и сообщение..." autocomplete="off" required>
+                <input type="text" id="message-input" placeholder="Введите сообщение..." autocomplete="off" required>
                 <button type="submit" class="btn">➤</button>
             </form>
         </div>
+        <div id="settings-page" class="page">
+            <h2>Настройки</h2>
+            <div class="form-group">
+                <label>Ваш никнейм</label>
+                <input type="text" id="nickname-input">
+            </div>
+            <button id="save-settings-btn" class="btn">Сохранить</button>
+            <hr style="border-color: var(--glass-border); margin: 20px 0;">
+            <div class="form-group">
+                <label>Ключ администратора</label>
+                <input type="password" id="admin-key-input" placeholder="Секретный ключ">
+            </div>
+            <button id="activate-admin-btn" class="btn">Активировать</button>
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="#" class="link" id="back-to-chat-btn">← Назад в чат</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-context-menu">
+        <button id="ctx-delete-msg">Удалить сообщение</button>
+        <button id="ctx-mute-user">Выдать мут (5 мин)</button>
+        <button class="danger" id="ctx-ban-user">Забанить</button>
+        <hr style="border-color: var(--glass-border); margin: 5px;">
+        <button class="danger" id="ctx-blackout-user">Черный экран</button>
+        <button class="danger" id="ctx-scream-user">Скример</button>
+    </div>
+
+    <div id="blackout-overlay"></div>
+    <div id="screamer-overlay">
+        <img id="screamer-image" src="https://i.ytimg.com/vi/g6yhhAUY6v8/maxresdefault.jpg" alt="Screamer">
+        <audio id="screamer-audio" src="https://www.myinstants.com/media/sounds/fnaf-2-scream.mp3"></audio>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
 
     <script>
         // --- Конфигурация ---
@@ -98,135 +139,229 @@
             messagingSenderId: "59577059636", appId: "1:59577059636:web:e98f456d054cc360747d61",
             databaseURL: "https://disk-c98ee-default-rtdb.firebaseio.com"
         };
-        // ВАЖНО: Этот ключ публичный. Для реального проекта создайте новый!
-        const AGORA_APP_ID = "c208af4624ab4b278ffb47369fbb7706";
+        const ADMIN_KEY = "999";
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
-        const messagesRef = db.ref('unified_chat');
-        let messagesListener = null;
+        const messagesRef = db.ref('admin_chat/messages');
+        const usersRef = db.ref('admin_chat/users');
+        const commandsRef = db.ref('admin_chat/commands');
+        let messagesListener = null, userProfileListener = null, commandsListener = null;
 
-        // --- Глобальные переменные для Agora ---
-        let agoraClient = null;
-        let localAudioTrack = null;
-        let localVideoTrack = null;
-        let isVideoJoined = false;
+        // --- Глобальные переменные ---
+        let currentUserProfile = null;
 
         // --- DOM Элементы ---
         const pages = document.querySelectorAll('.page');
         const loginPage = document.getElementById('login-page');
         const registerPage = document.getElementById('register-page');
-        const logoutButton = document.getElementById('logout-button');
-        const videosContainer = document.getElementById('videos-container');
-        const localPlayerContainer = document.getElementById('local-player-container');
-        const joinVideoBtn = document.getElementById('join-video-btn');
         const chatWindow = document.getElementById('chat-window');
-        const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
-        const bodyElement = document.body;
-
-        // --- HTML и логика для входа/регистрации ---
-        loginPage.innerHTML = `<h2>Вход</h2><form id="login-form"><div class="form-group" style="margin-bottom: 20px;"><label>Email</label><input type="email" id="login-email" required></div><div class="form-group" style="margin-bottom: 20px;"><label>Пароль</label><input type="password" id="login-password" required></div><button type="submit" class="btn">Войти</button></form><div style="text-align: center; margin-top: 20px;">Нет аккаунта? <a href="#" class="link" onclick="showPage('register-page')">Создать</a></div>`;
-        registerPage.innerHTML = `<h2>Регистрация</h2><form id="register-form"><div class="form-group" style="margin-bottom: 20px;"><label>Email</label><input type="email" id="register-email" required></div><div class="form-group" style="margin-bottom: 20px;"><label>Пароль</label><input type="password" id="register-password" required></div><button type="submit" class="btn">Зарегистрироваться</button></form><div style="text-align: center; margin-top: 20px;">Уже есть? <a href="#" class="link" onclick="showPage('login-page')">Войти</a></div>`;
-        document.getElementById('login-form').addEventListener('submit', (e)=>{e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-password').value).catch(e => alert(e.message));});
-        document.getElementById('register-form').addEventListener('submit', (e)=>{e.preventDefault(); auth.createUserWithEmailAndPassword(document.getElementById('register-email').value, document.getElementById('register-password').value).catch(e => alert(e.message));});
+        const chatForm = document.getElementById('chat-form');
+        const settingsBtn = document.getElementById('settings-btn');
+        const backToChatBtn = document.getElementById('back-to-chat-btn');
+        const nicknameInput = document.getElementById('nickname-input');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        const adminKeyInput = document.getElementById('admin-key-input');
+        const activateAdminBtn = document.getElementById('activate-admin-btn');
+        const adminContextMenu = document.getElementById('admin-context-menu');
+        
+        // --- HTML для страниц входа/регистрации ---
+        loginPage.innerHTML = `<h2>Вход</h2><form id="login-form"><div class="form-group"><input type="email" id="login-email" required placeholder="Email"></div><div class="form-group"><input type="password" id="login-password" required placeholder="Пароль"></div><button type="submit" class="btn">Войти</button></form><div style="text-align: center; margin-top: 20px;">Нет аккаунта? <a href="#" class="link" onclick="showPage('register-page')">Создать</a></div>`;
+        registerPage.innerHTML = `<h2>Регистрация</h2><form id="register-form"><div class="form-group"><input type="email" id="register-email" required placeholder="Email"></div><div class="form-group"><input type="password" id="register-password" required placeholder="Пароль"></div><button type="submit" class="btn">Зарегистрироваться</button></form><div style="text-align: center; margin-top: 20px;">Уже есть? <a href="#" class="link" onclick="showPage('login-page')">Войти</a></div>`;
+        
+        document.getElementById('login-form').addEventListener('submit', (e)=>{
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            auth.signInWithEmailAndPassword(email, password).catch(e => alert(e.message));
+        });
+        document.getElementById('register-form').addEventListener('submit', (e)=>{
+            e.preventDefault();
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            auth.createUserWithEmailAndPassword(email, password).catch(e => alert(e.message));
+        });
 
         // --- Основная логика ---
-        function showPage(pageId) { pages.forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); }
-        auth.onAuthStateChanged(user => { user ? (showPage('chat-page'), listenForMessages()) : (showPage('login-page'), messagesListener?.off()); });
-        logoutButton.addEventListener('click', async (e) => { e.preventDefault(); if(isVideoJoined) await leaveVideoCall(); auth.signOut(); });
+        function showPage(pageId) { 
+            pages.forEach(p => p.classList.remove('active')); 
+            document.getElementById(pageId).classList.add('active'); 
+        }
+        
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                if(userProfileListener) userProfileListener.off();
+                if(commandsListener) commandsListener.off();
 
-        // --- Логика Видеозвонка (Agora) ---
-        joinVideoBtn.addEventListener('click', async () => {
-            if (!isVideoJoined) {
-                await joinVideoCall();
+                const userRef = usersRef.child(user.uid);
+                userProfileListener = userRef.on('value', snapshot => {
+                    if (!snapshot.exists()) {
+                        const nickname = user.email.split('@')[0];
+                        userRef.set({
+                            nickname: nickname,
+                            email: user.email,
+                            isAdmin: false,
+                            isBanned: false,
+                            mutedUntil: 0
+                        });
+                    } else {
+                        currentUserProfile = snapshot.val();
+                        if(currentUserProfile.isBanned) {
+                            auth.signOut();
+                            alert("Вы были забанены.");
+                            return;
+                        }
+                        showPage('chat-page');
+                        listenForMessages();
+                        listenForAdminCommands(user.uid);
+                    }
+                });
             } else {
-                await leaveVideoCall();
+                showPage('login-page');
+                messagesListener?.off();
+                userProfileListener?.off();
+                commandsListener?.off();
+                currentUserProfile = null;
+            }
+        });
+        
+        document.getElementById('logout-button').addEventListener('click', (e) => { e.preventDefault(); auth.signOut(); });
+
+        // --- Логика Чата ---
+        function listenForMessages() {
+            if (messagesListener) messagesListener.off();
+            messagesListener = messagesRef.limitToLast(100);
+            chatWindow.innerHTML = '';
+            messagesListener.on('child_added', s => { if(s.val()) displayMessage(s.key, s.val()); });
+            messagesListener.on('child_removed', s => { document.getElementById(`msg-${s.key}`)?.remove(); });
+        }
+        
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const messageText = messageInput.value.trim();
+            if (!messageText || !currentUserProfile) return;
+
+            if (currentUserProfile.mutedUntil && currentUserProfile.mutedUntil > Date.now()) {
+                const remaining = Math.ceil((currentUserProfile.mutedUntil - Date.now()) / 1000);
+                alert(`Вы не можете писать еще ${remaining} секунд.`);
+                return;
+            }
+
+            messagesRef.push({
+                text: messageText,
+                uid: auth.currentUser.uid,
+                nickname: currentUserProfile.nickname,
+                isAdmin: currentUserProfile.isAdmin || false
+            });
+            messageInput.value = '';
+        });
+
+        function displayMessage(messageKey, message) {
+            const user = auth.currentUser;
+            const messageElement = document.createElement('div');
+            messageElement.id = `msg-${messageKey}`;
+            messageElement.className = 'message';
+            messageElement.dataset.messageKey = messageKey;
+            messageElement.dataset.senderUid = message.uid;
+            messageElement.dataset.senderNickname = message.nickname;
+
+            const usernameElement = document.createElement('span');
+            usernameElement.className = 'username';
+            usernameElement.textContent = message.nickname || message.email.split('@')[0];
+            if (message.isAdmin) usernameElement.classList.add('admin');
+            
+            const textElement = document.createElement('span');
+            textElement.textContent = message.text;
+
+            if (user && user.uid === message.uid) messageElement.classList.add('sent');
+            else messageElement.classList.add('received');
+            
+            messageElement.appendChild(usernameElement);
+            messageElement.appendChild(textElement);
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            messageElement.addEventListener('contextmenu', handleContextMenu);
+        }
+
+        // --- Логика Настроек ---
+        settingsBtn.addEventListener('click', () => {
+            nicknameInput.value = currentUserProfile.nickname;
+            showPage('settings-page');
+        });
+        backToChatBtn.addEventListener('click', () => showPage('chat-page'));
+        saveSettingsBtn.addEventListener('click', () => {
+            const newNickname = nicknameInput.value.trim();
+            if (newNickname) {
+                usersRef.child(auth.currentUser.uid).update({ nickname: newNickname });
+                alert("Никнейм сохранен!");
+                showPage('chat-page');
+            }
+        });
+        activateAdminBtn.addEventListener('click', () => {
+            if (adminKeyInput.value === ADMIN_KEY) {
+                usersRef.child(auth.currentUser.uid).update({ isAdmin: true });
+                alert("Режим администратора активирован!");
+            } else {
+                alert("Неверный ключ.");
             }
         });
 
-        async function joinVideoCall() {
-            joinVideoBtn.disabled = true;
-            joinVideoBtn.textContent = 'Подключение...';
-            
-            agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-            agoraClient.on('user-published', handleUserPublished);
-            agoraClient.on('user-unpublished', handleUserUnpublished);
-            
-            try {
-                // Все присоединяются к одному и тому же каналу
-                await agoraClient.join(AGORA_APP_ID, 'global_video_room', null, auth.currentUser.uid);
-                
-                // Запрашиваем доступ к камере и микрофону
-                [localAudioTrack, localVideoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-                
-                videosContainer.style.display = 'grid';
-                localPlayerContainer.innerHTML = ''; // Очищаем на случай, если там что-то было
-                localVideoTrack.play(localPlayerContainer);
-                
-                await agoraClient.publish([localAudioTrack, localVideoTrack]);
-                
-                joinVideoBtn.textContent = '❌ Покинуть видеочат';
-                joinVideoBtn.classList.add('btn-leave');
-                isVideoJoined = true;
+        // --- Логика Админ-меню ---
+        function handleContextMenu(e) {
+            e.preventDefault();
+            if (!currentUserProfile?.isAdmin) return;
 
-            } catch (error) {
-                console.error('Ошибка подключения к Agora:', error);
-                alert("Не удалось подключиться к видео. Проверьте разрешения для камеры/микрофона в браузере.");
-                await leaveVideoCall(); // Откат в случае ошибки
-            } finally {
-                joinVideoBtn.disabled = false;
-            }
+            const targetMessage = e.currentTarget;
+            const { messageKey, senderUid, senderNickname } = targetMessage.dataset;
+
+            adminContextMenu.style.top = `${e.clientY}px`;
+            adminContextMenu.style.left = `${e.clientX}px`;
+            adminContextMenu.style.display = 'block';
+
+            document.getElementById('ctx-delete-msg').onclick = () => messagesRef.child(messageKey).remove();
+            document.getElementById('ctx-ban-user').onclick = () => { if(confirm(`Забанить ${senderNickname}?`)) usersRef.child(senderUid).update({ isBanned: true }); };
+            document.getElementById('ctx-mute-user').onclick = () => {
+                const muteUntil = Date.now() + 5 * 60 * 1000;
+                usersRef.child(senderUid).update({ mutedUntil: muteUntil });
+                alert(`${senderNickname} получил мут на 5 минут.`);
+            };
+            document.getElementById('ctx-blackout-user').onclick = () => sendAdminCommand(senderUid, 'blackout');
+            document.getElementById('ctx-scream-user').onclick = () => sendAdminCommand(senderUid, 'screamer');
+        }
+        window.addEventListener('click', () => adminContextMenu.style.display = 'none');
+
+        function sendAdminCommand(targetUid, commandType) {
+            commandsRef.child(targetUid).set({ type: commandType });
         }
 
-        async function leaveVideoCall() {
-            localAudioTrack?.close();
-            localVideoTrack?.close();
-            
-            // Удаляем всех удаленных пользователей из DOM
-            for (const remoteUser of agoraClient?.remoteUsers || []) {
-                document.getElementById(`player-wrapper-${remoteUser.uid}`)?.remove();
-            }
-
-            if(agoraClient) await agoraClient.leave();
-
-            videosContainer.style.display = 'none';
-            localPlayerContainer.innerHTML = '';
-            
-            joinVideoBtn.textContent = '📞 Войти в общий видеочат';
-            joinVideoBtn.classList.remove('btn-leave');
-            isVideoJoined = false;
-        }
-
-        async function handleUserPublished(user, mediaType) {
-            await agoraClient.subscribe(user, mediaType);
-            if (mediaType === 'video') {
-                let remoteContainer = document.getElementById(`player-wrapper-${user.uid}`);
-                if (!remoteContainer) {
-                    remoteContainer = document.createElement('div');
-                    remoteContainer.id = `player-wrapper-${user.uid}`;
-                    remoteContainer.className = 'video-player';
-                    videosContainer.append(remoteContainer);
+        // --- Прослушивание Админ-команд ---
+        function listenForAdminCommands(myUid) {
+            if (commandsListener) commandsListener.off();
+            const myCommandsRef = commandsRef.child(myUid);
+            commandsListener = myCommandsRef.on('value', snapshot => {
+                if (!snapshot.exists()) return;
+                
+                const command = snapshot.val();
+                switch(command.type) {
+                    case 'blackout':
+                        const blackout = document.getElementById('blackout-overlay');
+                        blackout.innerHTML = `<p>Администратор применил к вам санкции.</p>`;
+                        blackout.style.display = 'flex';
+                        break;
+                    case 'screamer':
+                        const screamer = document.getElementById('screamer-overlay');
+                        screamer.style.display = 'flex';
+                        document.getElementById('screamer-audio').play();
+                        setTimeout(() => screamer.style.display = 'none', 3000);
+                        break;
                 }
-                user.videoTrack.play(remoteContainer);
-            }
-            if (mediaType === 'audio') user.audioTrack.play();
+                
+                myCommandsRef.remove();
+            });
         }
-        function handleUserUnpublished(user) { document.getElementById(`player-wrapper-${user.uid}`)?.remove(); }
-        
-        // --- Логика Текстового Чата ---
-        function listenForMessages() { /* ... код без изменений ... */ }
-        chatForm.addEventListener('submit', (e) => { /* ... код без изменений ... */ });
-        function displayMessage(message) { /* ... код без изменений ... */ }
-        function createExplosionParticles(container) { /* ... код без изменений ... */ }
-        
-        // --- Полный код функций текстового чата для копирования ---
-        function listenForMessages() { if (messagesListener) messagesListener.off(); messagesListener = messagesRef.limitToLast(100); chatWindow.innerHTML = ''; messagesListener.on('child_added', s => { if(s.val()) displayMessage(s.val()); }); }
-        chatForm.addEventListener('submit', (e) => { e.preventDefault(); const rawMessage = messageInput.value.trim(); const user = auth.currentUser; if (!rawMessage || !user) return; let messageText = rawMessage, messageEffect = 'none'; const parts = rawMessage.split(' '); const command = parts[0].toLowerCase(); if (command === '.взрыв') { messageEffect = 'explosion'; messageText = parts.slice(1).join(' '); } if (messageText) { messagesRef.push({ text: messageText, effect: messageEffect, email: user.email }); messageInput.value = ''; } });
-        function displayMessage(message) { const user = auth.currentUser, messageElement = document.createElement('div'), textElement = document.createElement('span'); messageElement.className = 'message'; textElement.textContent = message.text; if (user && user.email === message.email) messageElement.classList.add('sent'); else { messageElement.classList.add('received'); const usernameElement = document.createElement('span'); usernameElement.className = 'username'; usernameElement.textContent = message.email.split('@')[0]; messageElement.appendChild(usernameElement); } messageElement.appendChild(textElement); chatWindow.appendChild(messageElement); chatWindow.scrollTop = chatWindow.scrollHeight; if (message.effect === 'explosion') { bodyElement.classList.add('effect-shake-window'); setTimeout(() => bodyElement.classList.remove('effect-shake-window'), 400); messageElement.classList.add('flash'); setTimeout(() => messageElement.classList.remove('flash'), 500); createExplosionParticles(messageElement); } }
-        function createExplosionParticles(containerElement) { const particleContainer = document.createElement('div'); particleContainer.classList.add('particle-container'); containerElement.appendChild(particleContainer); const particlesCount = 30; const colors = ['#FFC700', '#FF7A00', '#FFFFFF', '#808080']; for (let i = 0; i < particlesCount; i++) { const particle = document.createElement('div'); particle.classList.add('particle'); const x = (Math.random() - 0.5) * 2 * 150, y = (Math.random() - 0.5) * 2 * 150; const color = colors[Math.floor(Math.random() * colors.length)]; const size = Math.random() * 5 + 2; particle.style.setProperty('--x', `${x}px`); particle.style.setProperty('--y', `${y}px`); particle.style.background = color; particle.style.width = `${size}px`; particle.style.height = `${size}px`; particleContainer.appendChild(particle); } setTimeout(() => { particleContainer.remove(); }, 1000); }
-
     </script>
 </body>
 </html>
