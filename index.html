@@ -11,7 +11,6 @@
         :root {
             --text-color: #f0f0f0; --accent-color: #0084ff; --glass-bg: rgba(0, 0, 0, 0.4);
             --glass-border: rgba(255, 255, 255, 0.2); --shadow-color: rgba(0, 0, 0, 0.37);
-            --danger-color: #e74c3c;
             --rarity-common: #9e9e9e; --rarity-rare: #64b5f6; --rarity-epic: #ba68c8; --rarity-legendary: #ffd54f;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -44,10 +43,7 @@
         .header-icons a { font-size: 1.5em; text-decoration: none; margin-left: 15px; }
         
         #chat-window { height: 450px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding: 10px; margin-bottom: 15px; border-radius: 8px; background: rgba(0,0,0,0.1); }
-        .message { max-width: 80%; padding: 10px 15px; word-wrap: break-word; line-height: 1.4; animation: fadeIn 0.4s; position: relative; overflow: visible !important; cursor: pointer; transition: background-color 0.3s ease; }
-        .message .username { font-size: 0.75em; font-weight: 600; display: block; margin-bottom: 4px; opacity: 0.8; }
-        .message.received { align-self: flex-start; background-color: rgba(255, 255, 255, 0.15); border-radius: 18px 18px 18px 5px; }
-        .message.sent { align-self: flex-end; background-color: var(--accent-color); color: white; border-radius: 18px 18px 5px 18px; }
+        .message { max-width: 80%; padding: 10px 15px; word-wrap: break-word; line-height: 1.4; animation: fadeIn 0.4s; position: relative; overflow: visible !important; cursor: pointer; }
         .username.admin { font-weight: bold; } .username.admin::after { content: ' ★'; color: #ffeb3b; }
         
         /* Стили для игры */
@@ -77,8 +73,9 @@
         @keyframes legendary-glow { 50% { box-shadow: inset 0 0 20px #fff; } }
         .inventory-item.common { border-color: var(--rarity-common); } .inventory-item.rare { border-color: var(--rarity-rare); }
         .inventory-item.epic { border-color: var(--rarity-epic); } .inventory-item.legendary { border-color: var(--rarity-legendary); }
-
-        /* Стили админ-меню и эффектов удаления */
+        
+        .message.received { align-self: flex-start; background-color: rgba(255, 255, 255, 0.15); border-radius: 18px 18px 18px 5px; }
+        .message.sent { align-self: flex-end; background-color: var(--accent-color); color: white; border-radius: 18px 18px 5px 18px; }
         .context-menu { position: absolute; display: none; z-index: 1000; background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 8px; padding: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 200px; }
         .context-menu button, .context-menu h4 { display: block; background: none; border: none; color: var(--text-color); padding: 10px 15px; width: 100%; text-align: left; cursor: pointer; border-radius: 5px; font-family: 'Montserrat', sans-serif; }
         .context-menu button:hover { background-color: rgba(255, 255, 255, 0.2); }
@@ -165,7 +162,6 @@
             databaseURL: "https://disk-c98ee-default-rtdb.firebaseio.com"
         };
         const ADMIN_KEY = "999";
-        
         const CASES = {
             bread: { name: 'Хлебная Корзина', cost: 50, items: [ { name: 'Черствая горбушка', rarity: 'common', value: 10, chance: 40 }, { name: 'Ломтик Дарницкого', rarity: 'common', value: 25, chance: 30 }, { name: 'Свежий лаваш', rarity: 'rare', value: 75, chance: 15 }, { name: 'Французский круассан', rarity: 'epic', value: 200, chance: 10 }, { name: 'Легендарный багет', rarity: 'legendary', value: 1000, chance: 5 } ] },
             honey: { name: 'Медовый Улей', cost: 150, items: [ { name: 'Цветочный мед', rarity: 'common', value: 50, chance: 40 }, { name: 'Липовый мед', rarity: 'common', value: 80, chance: 30 }, { name: 'Гречишный мед', rarity: 'rare', value: 250, chance: 18 }, { name: 'Эвкалиптовый мед', rarity: 'epic', value: 600, chance: 10 }, { name: 'Нектар богов', rarity: 'legendary', value: 2500, chance: 2 } ] },
@@ -200,7 +196,7 @@
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
         
-        // --- HTML для страниц (сокращено) ---
+        // --- HTML для страниц ---
         loginPage.innerHTML = `<h2>Вход</h2><form id="login-form"><div class="form-group"><input type="email" id="login-email" required placeholder="Email"></div><div class="form-group"><input type="password" id="login-password" required placeholder="Пароль"></div><button type="submit" class="btn">Войти</button></form><div style="text-align: center; margin-top: 20px;">Нет аккаунта? <a href="#" class="link" onclick="showPage('register-page')">Создать</a></div>`;
         registerPage.innerHTML = `<h2>Регистрация</h2><form id="register-form"><div class="form-group"><input type="email" id="register-email" required placeholder="Email"></div><div class="form-group"><input type="password" id="register-password" required placeholder="Пароль"></div><button type="submit" class="btn">Зарегистрироваться</button></form><div style="text-align: center; margin-top: 20px;">Уже есть? <a href="#" class="link" onclick="showPage('login-page')">Войти</a></div>`;
         settingsPage.innerHTML = `<h2>Настройки</h2><div class="form-group"><label>Ваш никнейм</label><input type="text" id="nickname-input"></div><button id="save-settings-btn" class="btn">Сохранить</button><hr style="border-color: var(--glass-border); margin: 20px 0;"><div id="admin-settings-section" style="display: none;"><h4>Настройки админа</h4><div class="form-group"><label>Цвет ника</label><input type="color" id="nick-color-input"></div><button id="set-rainbow-btn" class="btn">Сделать ник радужным</button><hr style="border-color: var(--glass-border); margin: 20px 0;"></div><div class="form-group"><label>Ключ администратора</label><input type="password" id="admin-key-input" placeholder="Секретный ключ"></div><button id="activate-admin-btn" class="btn">Активировать</button><div style="text-align: center; margin-top: 20px;"><a href="#" class="link back-to-chat-btn">← Назад в чат</a></div>`;
@@ -209,7 +205,11 @@
         function showPage(pageId) { pages.forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); }
         
         function cleanupListeners() {
-            Object.values(listeners).forEach(listenerRef => listenerRef.off());
+            Object.values(listeners).forEach(listenerRef => {
+                if(listenerRef && typeof listenerRef.off === 'function') {
+                    listenerRef.off();
+                }
+            });
             listeners = {};
         }
 
@@ -225,7 +225,9 @@
                         if(currentUserProfile.isBanned && (!currentUserProfile.bannedUntil || currentUserProfile.bannedUntil > Date.now())) {
                             auth.signOut(); alert("Вы были забанены."); return;
                         }
-                        if (!document.querySelector('.page.active')) showPage('chat-page');
+                        if (!document.querySelector('.page.active') || document.getElementById('loader-page').classList.contains('active')) {
+                            showPage('chat-page');
+                        }
                         listenForMessages();
                         listenForAdminCommands(user.uid);
                         listenForInventory(user.uid);
@@ -251,13 +253,10 @@
             if (isOpeningCase) return;
             const caseData = CASES[caseId];
             if ((currentUserProfile.balance || 0) < caseData.cost) { alert("Недостаточно средств!"); return; }
-            
             isOpeningCase = true;
             caseButtons.forEach(b => b.disabled = true);
             winDisplay.innerHTML = `<h3>Открываем ${caseData.name}...</h3>`;
-
             usersRef.child(auth.currentUser.uid).update({ balance: currentUserProfile.balance - caseData.cost });
-            
             const wonItem = getWeightedRandomItem(caseData.items);
             runRouletteAnimation(caseData, wonItem);
         }
@@ -286,7 +285,6 @@
             const winEl = strip.children[winIndex];
             winEl.className = `roulette-item ${wonItem.rarity}`;
             winEl.textContent = wonItem.name;
-
             setTimeout(() => {
                 const containerWidth = document.getElementById('roulette-container').offsetWidth;
                 const randomOffset = (Math.random() - 0.5) * (itemWidth * 0.8);
@@ -313,6 +311,7 @@
         
         // --- Логика Инвентаря ---
         function listenForInventory(uid) {
+            if (listeners.inventory) listeners.inventory.off();
             const inventoryRef = usersRef.child(uid).child('inventory');
             listeners.inventory = inventoryRef.on('value', snapshot => {
                 renderInventory(snapshot.val());
@@ -323,18 +322,13 @@
             inventoryGrid.innerHTML = '';
             let totalValue = 0;
             if (inventoryData) {
-                for (const itemId in inventoryData) {
-                    const item = inventoryData[itemId];
+                Object.entries(inventoryData).forEach(([itemId, item]) => {
                     totalValue += item.value;
                     const itemEl = document.createElement('div');
                     itemEl.className = `inventory-item ${item.rarity}`;
-                    itemEl.innerHTML = `
-                        <p class="item-name">${item.name}</p>
-                        <p class="item-value">💰 ${item.value}</p>
-                        <button class="btn sell-btn" data-item-id="${itemId}" data-item-value="${item.value}">Продать</button>
-                    `;
+                    itemEl.innerHTML = `<p class="item-name">${item.name}</p><p class="item-value">💰 ${item.value}</p><button class="btn sell-btn" data-item-id="${itemId}" data-item-value="${item.value}">Продать</button>`;
                     inventoryGrid.appendChild(itemEl);
-                }
+                });
             }
             inventoryValueDisplay.textContent = `Общая стоимость: ${totalValue.toLocaleString()}`;
             document.querySelectorAll('.sell-btn').forEach(btn => btn.addEventListener('click', sellItem));
@@ -347,19 +341,7 @@
             usersRef.child(auth.currentUser.uid).child('inventory').child(itemId).remove();
         }
         
-        // --- ПОЛНЫЙ КОД ОСТАЛЬНЫХ ФУНКЦИЙ ---
-        (function attachFullJS() {
-            const fullCodeContainer = document.createElement('div');
-            fullCodeContainer.innerHTML = `<form id="chat-form"></form><div id="main-context-menu"></div><div id="submenu-container"></div>`; // Dummy elements for listeners
-            // All other functions from the previous working version will be attached here
-        })();
-        
-        // --- КОД ЧАТА И АДМИНКИ (ИЗ ПРЕДЫДУЩЕЙ ВЕРСИИ) ---
-        // Весь оставшийся JavaScript код из предыдущего ответа, который вы предоставили,
-        // включая listenForMessages, displayMessage, admin functions, effects, etc.
-        // будет вставлен здесь, чтобы гарантировать полноту.
-        // Я просто вставлю его сюда целиком, чтобы не было сомнений.
-
+        // --- КОД ЧАТА И АДМИНКИ ---
         document.getElementById('login-form').addEventListener('submit', (e)=>{e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-password').value).catch(e => alert(e.message));});
         document.getElementById('register-form').addEventListener('submit', (e)=>{e.preventDefault(); auth.createUserWithEmailAndPassword(document.getElementById('register-email').value, document.getElementById('register-password').value).catch(e => alert(e.message));});
         
@@ -373,7 +355,7 @@
                 if (msgElement) {
                     const rect = msgElement.getBoundingClientRect();
                     initiateDestructionSequence(msgElement, rect);
-                    setTimeout(() => msgElement.remove(), 2000); // Give time for animation
+                    setTimeout(() => msgElement.remove(), 2000);
                 }
             });
         }
@@ -479,21 +461,13 @@
             const { messageKey, senderUid, senderNickname } = targetMessage.dataset;
             mainContextMenu.innerHTML = '';
             if (currentUserProfile.isAdmin) {
-                mainContextMenu.innerHTML = `
-                    <button data-action="mute">Выдать мут</button>
-                    <button data-action="ban">Выдать бан</button>
-                    <hr style="border-color: var(--glass-border); margin: 5px;">
-                    <button data-action="delete" class="danger">Уничтожить сообщение</button>
-                    <button data-action="blackout" class="danger">Черный экран</button>
-                    <button data-action="scream" class="danger">Скример</button>`;
+                mainContextMenu.innerHTML = `<button data-action="mute">Выдать мут</button><button data-action="ban">Выдать бан</button><hr style="border-color: var(--glass-border); margin: 5px;"><button data-action="delete" class="danger">Уничтожить сообщение</button><button data-action="blackout" class="danger">Черный экран</button><button data-action="scream" class="danger">Скример</button>`;
             } else if (senderUid === auth.currentUser.uid) {
                 mainContextMenu.innerHTML = `<button data-action="delete" class="danger">Удалить сообщение</button>`;
             } else { return; }
-
             mainContextMenu.style.top = `${e.clientY}px`;
             mainContextMenu.style.left = `${e.clientX}px`;
             mainContextMenu.style.display = 'block';
-
             const menuClickHandler = (event) => {
                 event.stopPropagation();
                 const action = event.target.dataset.action;
@@ -523,7 +497,6 @@
             submenuContainer.style.top = `${originalEvent.clientY}px`;
             submenuContainer.style.left = `${originalEvent.clientX}px`;
             submenuContainer.style.display = 'block';
-
             const submenuClickHandler = (event) => {
                 event.stopPropagation();
                 const action = event.target.dataset.action;
