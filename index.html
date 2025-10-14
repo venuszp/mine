@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Финальный Админ Чат</title>
+    <title>Финальный Админ Чат v2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
@@ -45,30 +45,30 @@
         .message .username { font-size: 0.75em; font-weight: 600; display: block; margin-bottom: 4px; opacity: 0.8; }
         .message.received { align-self: flex-start; background: rgba(255, 255, 255, 0.15); border-radius: 18px 18px 18px 5px; }
         .message.sent { align-self: flex-end; background: var(--accent-color); color: white; border-radius: 18px 18px 5px 18px; }
-        .username.admin { color: #ffeb3b !important; font-weight: bold; }
-        .username.admin::after { content: ' ★'; }
+        .username.admin { font-weight: bold; }
+        .username.admin::after { content: ' ★'; color: #ffeb3b; }
         
         /* Эффекты и оверлеи */
-        .effect-shake-window .glass-container { animation: screenShake 0.5s ease-in-out; }
-        @keyframes screenShake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); } 20%, 40%, 60%, 80% { transform: translateX(10px); } }
-        #flash-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: white; z-index: 9998; opacity: 0; pointer-events: none; }
+        .context-menu { position: absolute; display: none; z-index: 1000; background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 8px; padding: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 200px; }
+        .context-menu button, .context-menu h4 { display: block; background: none; border: none; color: var(--text-color); padding: 10px 15px; width: 100%; text-align: left; cursor: pointer; border-radius: 5px; font-family: 'Montserrat', sans-serif; }
+        .context-menu button:hover { background-color: rgba(255, 255, 255, 0.2); }
+        .context-menu h4 { font-size: 0.8em; opacity: 0.7; cursor: default; }
+        .context-menu .submenu-input { width: calc(100% - 30px); margin: 0 15px 10px 15px; }
+        .context-menu button.danger { color: var(--danger-color); }
+        
+        .message .text-content.fall-to-abyss { animation: fallToAbyss 0.5s ease-in forwards; }
+        @keyframes fallToAbyss { to { transform: translateY(50px); opacity: 0; } }
+        
         #nuke-missile { position: fixed; width: 25px; height: 25px; background: linear-gradient(45deg, #ff4e4e, #ffd2d2); border-radius: 50% 0 50% 50%; box-shadow: 0 0 15px #ff6d6d; z-index: 9999; transform: rotate(45deg); transition: all 1.5s cubic-bezier(0.5, -0.5, 0.9, 0.9); }
-        .particle { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; border-radius: 50%; animation: particle-anim 1s ease-out forwards; }
-        @keyframes particle-anim { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; } }
-        .message .char { display: inline-block; opacity: 0; transition: all 0.5s ease; }
+        #flash-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: white; z-index: 9998; opacity: 0; pointer-events: none; }
         .effect-rainbow { background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: rainbow-flow 2s linear infinite; }
         @keyframes rainbow-flow { to { background-position: -200% center; } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Админское меню */
-        #admin-context-menu { position: absolute; display: none; z-index: 1000; background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 8px; padding: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        #admin-context-menu button { display: block; background: none; border: none; color: var(--text-color); padding: 10px 15px; width: 100%; text-align: left; cursor: pointer; border-radius: 5px; font-family: 'Montserrat', sans-serif; }
-        #admin-context-menu button:hover { background-color: rgba(255, 255, 255, 0.2); }
-        #admin-context-menu button.danger { color: var(--danger-color); }
 
         #blackout-overlay, #screamer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; display: none; justify-content: center; align-items: center; }
         #blackout-overlay { background-color: black; color: white; font-size: 2em; text-align: center; }
         #screamer-overlay img { max-width: 100%; max-height: 100%; }
+        
+        input[type="color"] { padding: 0; height: 40px; border: none; background: none; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -88,7 +88,7 @@
             </div>
             <div id="chat-window"></div>
             <form id="chat-form">
-                <input type="text" id="message-input" placeholder="Введите .ядерка или .раз и сообщение" autocomplete="off" required>
+                <input type="text" id="message-input" placeholder="Введите .раз и сообщение..." autocomplete="off" required>
                 <button type="submit" class="btn">➤</button>
             </form>
         </div>
@@ -97,18 +97,21 @@
             <div class="form-group"><label>Ваш никнейм</label><input type="text" id="nickname-input"></div>
             <button id="save-settings-btn" class="btn">Сохранить</button>
             <hr style="border-color: var(--glass-border); margin: 20px 0;">
+            <div id="admin-settings-section" style="display: none;">
+                <h4>Настройки админа</h4>
+                <div class="form-group"><label>Цвет ника</label><input type="color" id="nick-color-input"></div>
+                <button id="set-rainbow-btn" class="btn">Сделать ник радужным</button>
+                <hr style="border-color: var(--glass-border); margin: 20px 0;">
+            </div>
             <div class="form-group"><label>Ключ администратора</label><input type="password" id="admin-key-input" placeholder="Секретный ключ"></div>
             <button id="activate-admin-btn" class="btn">Активировать</button>
             <div style="text-align: center; margin-top: 20px;"><a href="#" class="link" id="back-to-chat-btn">← Назад в чат</a></div>
         </div>
     </div>
 
-    <div id="admin-context-menu">
-        <button id="ctx-delete-msg">Удалить сообщение</button>
-        <button id="ctx-mute-user">Выдать мут (5 мин)</button>
-        <button class="danger" id="ctx-ban-user">Забанить</button>
-        <hr style="border-color: var(--glass-border); margin: 5px;"><button class="danger" id="ctx-blackout-user">Черный экран</button><button class="danger" id="ctx-scream-user">Скример</button>
-    </div>
+    <div id="main-context-menu" class="context-menu"></div>
+    <div id="submenu-container" class="context-menu"></div>
+    
     <div id="blackout-overlay"></div>
     <div id="screamer-overlay">
         <img id="screamer-image" src="https://i.ytimg.com/vi/g6yhhAUY6v8/maxresdefault.jpg" alt="Screamer">
@@ -132,12 +135,12 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
-        const messagesRef = db.ref('final_admin_chat/messages');
-        const usersRef = db.ref('final_admin_chat/users');
-        const commandsRef = db.ref('final_admin_chat/commands');
+        const messagesRef = db.ref('final_chat_v3/messages');
+        const usersRef = db.ref('final_chat_v3/users');
+        const commandsRef = db.ref('final_chat_v3/commands');
         let messagesListener = null, userProfileListener = null, commandsListener = null;
         let currentUserProfile = null;
-
+        
         // --- DOM Элементы ---
         const pages = document.querySelectorAll('.page');
         const loginPage = document.getElementById('login-page');
@@ -151,7 +154,11 @@
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const adminKeyInput = document.getElementById('admin-key-input');
         const activateAdminBtn = document.getElementById('activate-admin-btn');
-        const adminContextMenu = document.getElementById('admin-context-menu');
+        const mainContextMenu = document.getElementById('main-context-menu');
+        const submenuContainer = document.getElementById('submenu-container');
+        const adminSettingsSection = document.getElementById('admin-settings-section');
+        const nickColorInput = document.getElementById('nick-color-input');
+        const setRainbowBtn = document.getElementById('set-rainbow-btn');
         const bodyElement = document.body;
         
         // --- HTML для страниц входа/регистрации ---
@@ -169,10 +176,18 @@
                 const userRef = usersRef.child(user.uid);
                 userProfileListener = userRef.on('value', snapshot => {
                     if (!snapshot.exists()) {
-                        userRef.set({ nickname: user.email.split('@')[0], email: user.email, isAdmin: false, isBanned: false, mutedUntil: 0 });
+                        userRef.set({ nickname: user.email.split('@')[0], email: user.email, isAdmin: false, isBanned: false, mutedUntil: 0, nicknameColor: 'default' });
                     } else {
                         currentUserProfile = snapshot.val();
-                        if(currentUserProfile.isBanned) { auth.signOut(); alert("Вы были забанены."); return; }
+                        if(currentUserProfile.isBanned) {
+                            if (currentUserProfile.bannedUntil && currentUserProfile.bannedUntil < Date.now()) {
+                                usersRef.child(user.uid).update({isBanned: false, bannedUntil: null});
+                            } else {
+                                auth.signOut();
+                                alert("Вы были забанены.");
+                                return;
+                            }
+                        }
                         showPage('chat-page');
                         listenForMessages();
                         listenForAdminCommands(user.uid);
@@ -193,7 +208,15 @@
             messagesListener = messagesRef.limitToLast(100);
             chatWindow.innerHTML = '';
             messagesListener.on('child_added', s => { if(s.val()) displayMessage(s.key, s.val()); });
-            messagesListener.on('child_removed', s => { document.getElementById(`msg-${s.key}`)?.remove(); });
+            messagesListener.on('child_removed', s => { 
+                const msgElement = document.getElementById(`msg-${s.key}`);
+                if (msgElement) {
+                    const rect = msgElement.getBoundingClientRect();
+                    msgElement.querySelector('.text-content').classList.add('fall-to-abyss');
+                    setTimeout(() => runNukeSequence(rect), 300);
+                    setTimeout(() => msgElement.remove(), 800);
+                }
+            });
         }
         
         chatForm.addEventListener('submit', (e) => {
@@ -207,12 +230,11 @@
             let messageText = rawMessage, messageEffect = 'none';
             const parts = rawMessage.split(' ');
             const command = parts[0].toLowerCase();
-            const supportedEffects = { '.ядерка': 'nuke', '.раз': 'rainbow' };
-            if (supportedEffects[command]) {
-                messageEffect = supportedEffects[command];
+            if (command === '.раз' && currentUserProfile.isAdmin) {
+                messageEffect = 'rainbow';
                 messageText = parts.slice(1).join(' ');
             }
-            if (messageText) messagesRef.push({ text: messageText, uid: auth.currentUser.uid, nickname: currentUserProfile.nickname, isAdmin: currentUserProfile.isAdmin || false, effect: messageEffect });
+            if (messageText) messagesRef.push({ text: messageText, uid: auth.currentUser.uid, nickname: currentUserProfile.nickname, isAdmin: currentUserProfile.isAdmin || false, effect: messageEffect, nicknameColor: currentUserProfile.nicknameColor || 'default' });
             messageInput.value = '';
         });
 
@@ -227,8 +249,18 @@
             const usernameElement = document.createElement('span');
             usernameElement.className = 'username';
             usernameElement.textContent = message.nickname;
-            if (message.isAdmin) usernameElement.classList.add('admin');
+            if (message.isAdmin) {
+                usernameElement.classList.add('admin');
+                if(message.nicknameColor) {
+                    if (message.nicknameColor === 'rainbow') {
+                        usernameElement.classList.add('effect-rainbow');
+                    } else if (message.nicknameColor !== 'default') {
+                        usernameElement.style.color = message.nicknameColor;
+                    }
+                }
+            }
             const textElement = document.createElement('span');
+            textElement.className = 'text-content';
             textElement.textContent = message.text;
             if (user && user.uid === message.uid) messageElement.classList.add('sent');
             else messageElement.classList.add('received');
@@ -237,42 +269,135 @@
             chatWindow.appendChild(messageElement);
             chatWindow.scrollTop = chatWindow.scrollHeight;
             messageElement.addEventListener('contextmenu', handleContextMenu);
-            if (message.effect === 'nuke') runNukeSequence(messageElement);
-            else if (message.effect === 'rainbow') textElement.classList.add('effect-rainbow');
+            if (message.effect === 'rainbow' && message.isAdmin) { textElement.classList.add('effect-rainbow'); }
         }
 
         // --- Логика Настроек и Админки ---
-        settingsBtn.addEventListener('click', () => { nicknameInput.value = currentUserProfile.nickname; showPage('settings-page'); });
+        settingsBtn.addEventListener('click', () => {
+            nicknameInput.value = currentUserProfile.nickname;
+            if (currentUserProfile.isAdmin) {
+                adminSettingsSection.style.display = 'block';
+                nickColorInput.value = currentUserProfile.nicknameColor || '#ffffff';
+            } else {
+                adminSettingsSection.style.display = 'none';
+            }
+            showPage('settings-page');
+        });
         backToChatBtn.addEventListener('click', () => showPage('chat-page'));
         saveSettingsBtn.addEventListener('click', () => {
             const newNickname = nicknameInput.value.trim();
-            if (newNickname) { usersRef.child(auth.currentUser.uid).update({ nickname: newNickname }); alert("Никнейм сохранен!"); showPage('chat-page'); }
+            const updates = {};
+            if (newNickname) updates.nickname = newNickname;
+            if (currentUserProfile.isAdmin) updates.nicknameColor = nickColorInput.value;
+            if (Object.keys(updates).length > 0) usersRef.child(auth.currentUser.uid).update(updates);
+            alert("Настройки сохранены!");
+            showPage('chat-page');
+        });
+        setRainbowBtn.addEventListener('click', () => {
+            usersRef.child(auth.currentUser.uid).update({ nicknameColor: 'rainbow' });
+            alert("Радужный ник установлен!");
         });
         activateAdminBtn.addEventListener('click', () => {
             if (adminKeyInput.value === ADMIN_KEY) { usersRef.child(auth.currentUser.uid).update({ isAdmin: true }); alert("Режим администратора активирован!"); }
             else { alert("Неверный ключ."); }
         });
-        function handleContextMenu(e) { /* ... (Код из прошлого ответа) ... */ }
-        window.addEventListener('click', () => adminContextMenu.style.display = 'none');
-        function sendAdminCommand(targetUid, commandType) { commandsRef.child(targetUid).set({ type: commandType }); }
-        function listenForAdminCommands(myUid) { /* ... (Код из прошлого ответа) ... */ }
-
-        // --- Логика Визуальных Эффектов ---
-        function runNukeSequence(messageElement) { /* ... (Код из прошлого ответа) ... */ }
-        function createExplosionParticles(containerElement) { /* ... (Код из прошлого ответа) ... */ }
-        function assembleTextFromAsh(textElement) { /* ... (Код из прошлого ответа) ... */ }
         
-        // --- ПОЛНЫЙ КОД СКРЫТЫХ ФУНКЦИЙ ---
         function handleContextMenu(e) {
-            e.preventDefault(); if (!currentUserProfile?.isAdmin) return;
-            const targetMessage = e.currentTarget; const { messageKey, senderUid, senderNickname } = targetMessage.dataset;
-            adminContextMenu.style.top = `${e.clientY}px`; adminContextMenu.style.left = `${e.clientX}px`; adminContextMenu.style.display = 'block';
-            document.getElementById('ctx-delete-msg').onclick = () => messagesRef.child(messageKey).remove();
-            document.getElementById('ctx-ban-user').onclick = () => { if(confirm(`Забанить ${senderNickname}?`)) usersRef.child(senderUid).update({ isBanned: true }); };
-            document.getElementById('ctx-mute-user').onclick = () => { const muteUntil = Date.now() + 5 * 60 * 1000; usersRef.child(senderUid).update({ mutedUntil: muteUntil }); alert(`${senderNickname} получил мут на 5 минут.`); };
-            document.getElementById('ctx-blackout-user').onclick = () => sendAdminCommand(senderUid, 'blackout');
-            document.getElementById('ctx-scream-user').onclick = () => sendAdminCommand(senderUid, 'screamer');
+            e.preventDefault();
+            const targetMessage = e.currentTarget;
+            const { messageKey, senderUid, senderNickname } = targetMessage.dataset;
+            mainContextMenu.innerHTML = ''; // Очищаем
+            
+            // Админы видят все
+            if (currentUserProfile.isAdmin) {
+                mainContextMenu.innerHTML = `
+                    <button data-action="mute">Выдать мут</button>
+                    <button data-action="ban">Выдать бан</button>
+                    <hr style="border-color: var(--glass-border); margin: 5px;">
+                    <button data-action="delete" class="danger">Уничтожить сообщение</button>
+                    <button data-action="blackout" class="danger">Черный экран</button>
+                    <button data-action="scream" class="danger">Скример</button>
+                `;
+            } 
+            // Пользователи видят удаление только своих сообщений
+            else if (senderUid === auth.currentUser.uid) {
+                mainContextMenu.innerHTML = `<button data-action="delete" class="danger">Удалить сообщение</button>`;
+            } 
+            // Если показывать нечего, выходим
+            else { return; }
+
+            mainContextMenu.style.top = `${e.clientY}px`;
+            mainContextMenu.style.left = `${e.clientX}px`;
+            mainContextMenu.style.display = 'block';
+            submenuContainer.style.display = 'none';
+
+            mainContextMenu.onclick = (event) => {
+                const action = event.target.dataset.action;
+                if (!action) return;
+                mainContextMenu.style.display = 'none';
+                
+                switch(action) {
+                    case 'delete': messagesRef.child(messageKey).remove(); break;
+                    case 'mute': showSubMenu('mute', senderUid, senderNickname, e); break;
+                    case 'ban': showSubMenu('ban', senderUid, senderNickname, e); break;
+                    case 'blackout': sendAdminCommand(senderUid, 'blackout'); break;
+                    case 'scream': sendAdminCommand(senderUid, 'screamer'); break;
+                }
+            };
         }
+        
+        function showSubMenu(type, uid, nickname, originalEvent) {
+            let content = '';
+            if (type === 'mute') {
+                content = `
+                    <h4>Мут для ${nickname}</h4>
+                    <input type="number" class="submenu-input" id="mute-duration" placeholder="Время в минутах">
+                    <button id="give-mute-btn">Выдать мут</button>
+                    <button id="remove-mute-btn">Снять мут</button>
+                `;
+            } else if (type === 'ban') {
+                content = `
+                    <h4>Бан для ${nickname}</h4>
+                    <input type="number" class="submenu-input" id="ban-duration" placeholder="Время в днях">
+                    <button id="give-ban-btn">Выдать бан</button>
+                    <button id="remove-ban-btn">Снять бан</button>
+                `;
+            }
+            submenuContainer.innerHTML = content;
+            submenuContainer.style.top = `${originalEvent.clientY}px`;
+            submenuContainer.style.left = `${originalEvent.clientX}px`;
+            submenuContainer.style.display = 'block';
+
+            if (type === 'mute') {
+                document.getElementById('give-mute-btn').onclick = () => {
+                    const duration = parseInt(document.getElementById('mute-duration').value) || 5;
+                    usersRef.child(uid).update({ mutedUntil: Date.now() + duration * 60 * 1000 });
+                    submenuContainer.style.display = 'none';
+                };
+                document.getElementById('remove-mute-btn').onclick = () => {
+                    usersRef.child(uid).update({ mutedUntil: 0 });
+                    submenuContainer.style.display = 'none';
+                };
+            } else if (type === 'ban') {
+                document.getElementById('give-ban-btn').onclick = () => {
+                    const duration = parseInt(document.getElementById('ban-duration').value) || 9999;
+                    usersRef.child(uid).update({ isBanned: true, bannedUntil: Date.now() + duration * 24 * 60 * 60 * 1000 });
+                    submenuContainer.style.display = 'none';
+                };
+                document.getElementById('remove-ban-btn').onclick = () => {
+                    usersRef.child(uid).update({ isBanned: false, bannedUntil: null });
+                    submenuContainer.style.display = 'none';
+                };
+            }
+        }
+
+        window.addEventListener('click', () => {
+            mainContextMenu.style.display = 'none';
+            submenuContainer.style.display = 'none';
+        });
+
+        function sendAdminCommand(targetUid, commandType) { commandsRef.child(targetUid).set({ type: commandType }); }
+
         function listenForAdminCommands(myUid) {
             if (commandsListener) commandsListener.off(); const myCommandsRef = commandsRef.child(myUid);
             commandsListener = myCommandsRef.on('value', snapshot => {
@@ -284,36 +409,30 @@
                 myCommandsRef.remove();
             });
         }
-        function runNukeSequence(messageElement) {
-            messageElement.style.visibility = 'hidden'; const missile = document.createElement('div'); missile.id = 'nuke-missile'; document.body.appendChild(missile);
-            const rect = messageElement.getBoundingClientRect(); const targetX = rect.left + rect.width / 2; const targetY = rect.top + rect.height / 2;
+        
+        function runNukeSequence(targetRect) {
+            const missile = document.createElement('div'); missile.id = 'nuke-missile'; document.body.appendChild(missile);
+            const targetX = targetRect.left + targetRect.width / 2; const targetY = targetRect.top + targetRect.height / 2;
             const startPos = { x: Math.random() * window.innerWidth, y: -50 }; missile.style.left = `${startPos.x}px`; missile.style.top = `${startPos.y}px`;
             setTimeout(() => { missile.style.left = `${targetX}px`; missile.style.top = `${targetY}px`; missile.style.transform = 'rotate(225deg) scale(0.5)'; }, 100);
             setTimeout(() => {
                 missile.remove(); const flash = document.getElementById('flash-overlay'); flash.style.transition = 'opacity 0.1s ease-in-out'; flash.style.opacity = 1; setTimeout(() => flash.style.opacity = 0, 100);
-                bodyElement.classList.add('effect-shake-window'); setTimeout(() => bodyElement.classList.remove('effect-shake-window'), 500); createExplosionParticles(messageElement);
-                setTimeout(() => { messageElement.style.visibility = 'visible'; assembleTextFromAsh(messageElement.querySelector('span:last-child')); }, 300);
+                bodyElement.classList.add('effect-shake-window'); setTimeout(() => bodyElement.classList.remove('effect-shake-window'), 500);
+                // Взрыв частиц в месте, где было сообщение
+                const particleOrigin = document.createElement('div'); particleOrigin.style.position = 'fixed'; particleOrigin.style.top = `${targetY}px`; particleOrigin.style.left = `${targetX}px`;
+                document.body.appendChild(particleOrigin); createExplosionParticles(particleOrigin); setTimeout(() => particleOrigin.remove(), 1100);
             }, 1600);
         }
+
         function createExplosionParticles(containerElement) {
             const particlesCount = 50; const colors = ['#FFC700', '#FF7A00', '#FFFFFF', '#808080', '#ff4040'];
             for (let i = 0; i < particlesCount; i++) {
-                const particle = document.createElement('div'); particle.classList.add('particle'); const x = (Math.random() - 0.5) * 2 * 250; const y = (Math.random() - 0.5) * 2 * 250;
+                const particle = document.createElement('div'); particle.style.position = 'absolute'; particle.classList.add('particle'); const x = (Math.random() - 0.5) * 2 * 250; const y = (Math.random() - 0.5) * 2 * 250;
                 const color = colors[Math.floor(Math.random() * colors.length)]; const size = Math.random() * 8 + 3;
                 particle.style.setProperty('--x', `${x}px`); particle.style.setProperty('--y', `${y}px`);
                 particle.style.background = color; particle.style.width = `${size}px`; particle.style.height = `${size}px`;
                 containerElement.appendChild(particle); setTimeout(() => particle.remove(), 1000);
             }
-        }
-        function assembleTextFromAsh(textElement) {
-            const text = textElement.textContent; textElement.innerHTML = '';
-            const chars = text.split('');
-            chars.forEach((char, i) => {
-                const span = document.createElement('span'); span.className = 'char'; span.textContent = char === ' ' ? '\u00A0' : char;
-                const randomX = (Math.random() - 0.5) * 50; const randomY = (Math.random() - 0.5) * 50; const randomRot = (Math.random() - 0.5) * 90;
-                span.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRot}deg)`; textElement.appendChild(span);
-                setTimeout(() => { span.style.opacity = '1'; span.style.transform = 'translate(0, 0) rotate(0deg)'; }, 50 + i * 30);
-            });
         }
     </script>
 </body>
