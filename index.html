@@ -282,11 +282,7 @@
             const updates = {};
             if (newNickname) updates.nickname = newNickname;
             if (currentUserProfile.isAdmin) {
-                if (currentUserProfile.nicknameColor !== 'rainbow') {
-                    updates.nicknameColor = nickColorInput.value;
-                } else {
-                    updates.nicknameColor = nickColorInput.value;
-                }
+                 updates.nicknameColor = nickColorInput.value;
             }
             if (Object.keys(updates).length > 0) usersRef.child(auth.currentUser.uid).update(updates);
             alert("Настройки сохранены!");
@@ -304,6 +300,7 @@
         // --- ИСПРАВЛЕННАЯ ЛОГИКА АДМИН-МЕНЮ ---
         function handleContextMenu(e) {
             e.preventDefault();
+            hideMenus(); // Прячем все меню перед показом нового
             const targetMessage = e.currentTarget;
             const { messageKey, senderUid, senderNickname } = targetMessage.dataset;
             mainContextMenu.innerHTML = '';
@@ -322,10 +319,9 @@
             mainContextMenu.style.top = `${e.clientY}px`;
             mainContextMenu.style.left = `${e.clientX}px`;
             mainContextMenu.style.display = 'block';
-            submenuContainer.style.display = 'none';
 
-            mainContextMenu.addEventListener('click', (event) => {
-                event.stopPropagation(); // ВАЖНО: Останавливаем клик, чтобы он не закрыл меню
+            const menuClickHandler = (event) => {
+                event.stopPropagation();
                 const action = event.target.dataset.action;
                 if (!action) return;
                 
@@ -338,7 +334,9 @@
                     case 'blackout': sendAdminCommand(senderUid, 'blackout'); break;
                     case 'scream': sendAdminCommand(senderUid, 'screamer'); break;
                 }
-            }, { once: true }); // Слушатель сработает только один раз, чтобы не накапливаться
+            };
+            mainContextMenu.replaceWith(mainContextMenu.cloneNode(true)); // Очищаем старые слушатели
+            document.getElementById('main-context-menu').addEventListener('click', menuClickHandler);
         }
         
         function showSubMenu(type, uid, nickname, originalEvent) {
@@ -354,8 +352,8 @@
             submenuContainer.style.left = `${originalEvent.clientX}px`;
             submenuContainer.style.display = 'block';
 
-            submenuContainer.addEventListener('click', (event) => {
-                event.stopPropagation(); // ВАЖНО: Останавливаем клик здесь тоже
+            const submenuClickHandler = (event) => {
+                event.stopPropagation();
                 const action = event.target.dataset.action;
                 if (!action) return;
                 
@@ -379,11 +377,18 @@
                         alert(`Бан с ${nickname} снят.`);
                     }
                 }
-                submenuContainer.style.display = 'none';
-            }, { once: true });
+                hideMenus();
+            };
+            submenuContainer.replaceWith(submenuContainer.cloneNode(true)); // Очищаем старые слушатели
+            document.getElementById('submenu-container').addEventListener('click', submenuClickHandler);
         }
 
-        window.addEventListener('click', () => { mainContextMenu.style.display = 'none'; submenuContainer.style.display = 'none'; });
+        function hideMenus() {
+            document.getElementById('main-context-menu').style.display = 'none';
+            document.getElementById('submenu-container').style.display = 'none';
+        }
+        window.addEventListener('click', hideMenus);
+
         function sendAdminCommand(targetUid, commandType) { commandsRef.child(targetUid).set({ type: commandType }); }
         function listenForAdminCommands(myUid) {
             if (commandsListener) commandsListener.off(); const myCommandsRef = commandsRef.child(myUid);
