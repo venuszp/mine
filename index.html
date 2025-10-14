@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Финальный Админ Чат v3</title>
+    <title>Финальный Админ Чат v4</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
@@ -56,15 +56,16 @@
         .context-menu .submenu-input { width: calc(100% - 30px); margin: 0 15px 10px 15px; }
         .context-menu button.danger { color: var(--danger-color); }
         
-        .message.disintegrating { background-color: transparent !important; }
-        .message.disintegrating .char { display: inline-block; animation: fallToAbyss 0.5s ease-in forwards; }
+        .message.disintegrating { background-color: transparent !important; box-shadow: none !important; }
+        .message.disintegrating .text-content > span { display: inline-block; animation: fallToAbyss 0.5s ease-in forwards; }
         @keyframes fallToAbyss { to { transform: translateY(80px) rotate(90deg); opacity: 0; } }
         
         #nuke-missile { position: fixed; width: 25px; height: 25px; background: linear-gradient(45deg, #ff4e4e, #ffd2d2); border-radius: 50% 0 50% 50%; box-shadow: 0 0 15px #ff6d6d; z-index: 9999; transform: rotate(45deg); transition: all 1.2s cubic-bezier(0.6, -0.28, 0.735, 0.045); }
-        #flash-effect { position: fixed; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,204,0.5) 50%, rgba(255,255,255,0) 70%); border-radius: 50%; z-index: 9998; opacity: 0; transform: scale(0); pointer-events: none; animation: flashBang 0.5s ease-out; }
+        #flash-effect { position: fixed; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,204,0.5) 50%, rgba(255,255,255,0) 70%); border-radius: 50%; z-index: 9998; opacity: 0; transform: scale(0); pointer-events: none; animation: flashBang 0.5s ease-out forwards; }
         @keyframes flashBang { 0% { opacity: 1; transform: scale(0); } 50% { opacity: 0.8; transform: scale(3); } 100% { opacity: 0; transform: scale(0); } }
         .effect-rainbow { background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: rainbow-flow 2s linear infinite; }
         @keyframes rainbow-flow { to { background-position: -200% center; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
         #blackout-overlay, #screamer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; display: none; justify-content: center; align-items: center; }
         #blackout-overlay { background-color: black; color: white; font-size: 2em; text-align: center; }
@@ -264,7 +265,7 @@
             if (message.effect === 'rainbow' && message.isAdmin) { textElement.classList.add('effect-rainbow'); }
         }
 
-        // --- Логика Настроек и Админки ---
+        // --- Логика Настроек ---
         settingsBtn.addEventListener('click', () => {
             nicknameInput.value = currentUserProfile.nickname;
             if (currentUserProfile.isAdmin) {
@@ -281,8 +282,9 @@
             const updates = {};
             if (newNickname) updates.nickname = newNickname;
             if (currentUserProfile.isAdmin) {
-                // Если пользователь выбрал радужный цвет, он сохранится отдельно
                 if (currentUserProfile.nicknameColor !== 'rainbow') {
+                    updates.nicknameColor = nickColorInput.value;
+                } else {
                     updates.nicknameColor = nickColorInput.value;
                 }
             }
@@ -299,6 +301,7 @@
             else { alert("Неверный ключ."); }
         });
         
+        // --- ИСПРАВЛЕННАЯ ЛОГИКА АДМИН-МЕНЮ ---
         function handleContextMenu(e) {
             e.preventDefault();
             const targetMessage = e.currentTarget;
@@ -321,10 +324,13 @@
             mainContextMenu.style.display = 'block';
             submenuContainer.style.display = 'none';
 
-            mainContextMenu.onclick = (event) => {
+            mainContextMenu.addEventListener('click', (event) => {
+                event.stopPropagation(); // ВАЖНО: Останавливаем клик, чтобы он не закрыл меню
                 const action = event.target.dataset.action;
                 if (!action) return;
+                
                 mainContextMenu.style.display = 'none';
+                
                 switch(action) {
                     case 'delete': messagesRef.child(messageKey).remove(); break;
                     case 'mute': showSubMenu('mute', senderUid, senderNickname, e); break;
@@ -332,42 +338,49 @@
                     case 'blackout': sendAdminCommand(senderUid, 'blackout'); break;
                     case 'scream': sendAdminCommand(senderUid, 'screamer'); break;
                 }
-            };
+            }, { once: true }); // Слушатель сработает только один раз, чтобы не накапливаться
         }
         
         function showSubMenu(type, uid, nickname, originalEvent) {
-            submenuContainer.innerHTML = ''; // Очистка
+            submenuContainer.innerHTML = '';
             let content = '';
             if (type === 'mute') {
-                content = `<h4>Мут для ${nickname}</h4><input type="number" class="submenu-input" id="duration-input" placeholder="Время в минутах"><button data-action="give">Выдать мут</button><button data-action="remove">Снять мут</button>`;
+                content = `<h4>Мут для ${nickname}</h4><input type="number" class="submenu-input" id="duration-input" placeholder="Время в минутах"><button data-action="give">Выдать</button><button data-action="remove">Снять</button>`;
             } else if (type === 'ban') {
-                content = `<h4>Бан для ${nickname}</h4><input type="number" class="submenu-input" id="duration-input" placeholder="Время в днях"><button data-action="give">Выдать бан</button><button data-action="remove">Снять бан</button>`;
+                content = `<h4>Бан для ${nickname}</h4><input type="number" class="submenu-input" id="duration-input" placeholder="Время в днях"><button data-action="give">Выдать</button><button data-action="remove">Снять</button>`;
             }
             submenuContainer.innerHTML = content;
             submenuContainer.style.top = `${originalEvent.clientY}px`;
             submenuContainer.style.left = `${originalEvent.clientX}px`;
             submenuContainer.style.display = 'block';
 
-            submenuContainer.onclick = (event) => {
+            submenuContainer.addEventListener('click', (event) => {
+                event.stopPropagation(); // ВАЖНО: Останавливаем клик здесь тоже
                 const action = event.target.dataset.action;
                 if (!action) return;
+                
                 if (type === 'mute') {
                     if(action === 'give') {
                         const duration = parseInt(document.getElementById('duration-input').value) || 5;
                         usersRef.child(uid).update({ mutedUntil: Date.now() + duration * 60 * 1000 });
+                        alert(`${nickname} получил мут на ${duration} минут.`);
                     } else {
                         usersRef.child(uid).update({ mutedUntil: 0 });
+                        alert(`Мут с ${nickname} снят.`);
                     }
                 } else if (type === 'ban') {
                     if(action === 'give') {
-                        const duration = parseInt(document.getElementById('duration-input').value) || 9999;
-                        usersRef.child(uid).update({ isBanned: true, bannedUntil: Date.now() + duration * 24 * 60 * 60 * 1000 });
+                        const duration = parseInt(document.getElementById('duration-input').value);
+                        const banUntil = duration ? Date.now() + duration * 24 * 60 * 60 * 1000 : null;
+                        usersRef.child(uid).update({ isBanned: true, bannedUntil: banUntil });
+                        alert(`${nickname} забанен ${duration ? `на ${duration} дней` : 'навсегда'}.`);
                     } else {
                         usersRef.child(uid).update({ isBanned: false, bannedUntil: null });
+                        alert(`Бан с ${nickname} снят.`);
                     }
                 }
                 submenuContainer.style.display = 'none';
-            };
+            }, { once: true });
         }
 
         window.addEventListener('click', () => { mainContextMenu.style.display = 'none'; submenuContainer.style.display = 'none'; });
@@ -406,7 +419,6 @@
                 textEl.innerHTML = '';
                 chars.forEach((char, i) => {
                     const span = document.createElement('span');
-                    span.className = 'char';
                     span.textContent = char === ' ' ? '\u00A0' : char;
                     span.style.animationDelay = `${i * 0.02}s`;
                     textEl.appendChild(span);
@@ -423,11 +435,11 @@
         function createExplosionParticles(containerElement) {
             const particlesCount = 50; const colors = ['#FFC700', '#FF7A00', '#FFFFFF', '#808080', '#ff4040'];
             for (let i = 0; i < particlesCount; i++) {
-                const particle = document.createElement('div'); particle.style.position = 'absolute'; const x = (Math.random() - 0.5) * 2 * 250; const y = (Math.random() - 0.5) * 2 * 250;
+                const particle = document.createElement('div');
+                const x = (Math.random() - 0.5) * 2 * 250; const y = (Math.random() - 0.5) * 2 * 250;
                 const color = colors[Math.floor(Math.random() * colors.length)]; const size = Math.random() * 8 + 3;
+                particle.style.cssText = `position: absolute; width: ${size}px; height: ${size}px; background: ${color}; border-radius: 50%; animation: particle-anim 1s ease-out forwards;`;
                 particle.style.setProperty('--x', `${x}px`); particle.style.setProperty('--y', `${y}px`);
-                particle.style.background = color; particle.style.width = `${size}px`; particle.style.height = `${size}px`;
-                particle.style.borderRadius = '50%'; particle.style.animation = `particle-anim 1s ease-out forwards`;
                 containerElement.appendChild(particle); setTimeout(() => particle.remove(), 1000);
             }
         }
