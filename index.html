@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат с Эффектами</title>
+    <title>Финальный Админ Чат</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
@@ -11,6 +11,7 @@
         :root {
             --text-color: #f0f0f0; --accent-color: #0084ff; --glass-bg: rgba(0, 0, 0, 0.4);
             --glass-border: rgba(255, 255, 255, 0.2); --shadow-color: rgba(0, 0, 0, 0.37);
+            --danger-color: #e74c3c;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -40,33 +41,34 @@
         
         #chat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
         #chat-window { height: 450px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding: 10px; margin-bottom: 15px; border-radius: 8px; background: rgba(0,0,0,0.1); }
-        .message { max-width: 80%; padding: 10px 15px; word-wrap: break-word; line-height: 1.4; animation: fadeIn 0.4s; position: relative; overflow: visible !important; }
+        .message { max-width: 80%; padding: 10px 15px; word-wrap: break-word; line-height: 1.4; animation: fadeIn 0.4s; position: relative; overflow: visible !important; cursor: pointer; }
         .message .username { font-size: 0.75em; font-weight: 600; display: block; margin-bottom: 4px; opacity: 0.8; }
         .message.received { align-self: flex-start; background: rgba(255, 255, 255, 0.15); border-radius: 18px 18px 18px 5px; }
         .message.sent { align-self: flex-end; background: var(--accent-color); color: white; border-radius: 18px 18px 5px 18px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Эффекты */
+        .username.admin { color: #ffeb3b !important; font-weight: bold; }
+        .username.admin::after { content: ' ★'; }
+        
+        /* Эффекты и оверлеи */
         .effect-shake-window .glass-container { animation: screenShake 0.5s ease-in-out; }
         @keyframes screenShake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); } 20%, 40%, 60%, 80% { transform: translateX(10px); } }
-        
         #flash-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: white; z-index: 9998; opacity: 0; pointer-events: none; }
         #nuke-missile { position: fixed; width: 25px; height: 25px; background: linear-gradient(45deg, #ff4e4e, #ffd2d2); border-radius: 50% 0 50% 50%; box-shadow: 0 0 15px #ff6d6d; z-index: 9999; transform: rotate(45deg); transition: all 1.5s cubic-bezier(0.5, -0.5, 0.9, 0.9); }
-        
         .particle { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; border-radius: 50%; animation: particle-anim 1s ease-out forwards; }
         @keyframes particle-anim { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; } }
-        
         .message .char { display: inline-block; opacity: 0; transition: all 0.5s ease; }
-
-        .effect-rainbow {
-            background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8);
-            background-size: 200% auto;
-            color: transparent;
-            -webkit-background-clip: text;
-            background-clip: text;
-            animation: rainbow-flow 2s linear infinite;
-        }
+        .effect-rainbow { background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: rainbow-flow 2s linear infinite; }
         @keyframes rainbow-flow { to { background-position: -200% center; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Админское меню */
+        #admin-context-menu { position: absolute; display: none; z-index: 1000; background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 8px; padding: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        #admin-context-menu button { display: block; background: none; border: none; color: var(--text-color); padding: 10px 15px; width: 100%; text-align: left; cursor: pointer; border-radius: 5px; font-family: 'Montserrat', sans-serif; }
+        #admin-context-menu button:hover { background-color: rgba(255, 255, 255, 0.2); }
+        #admin-context-menu button.danger { color: var(--danger-color); }
+
+        #blackout-overlay, #screamer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; display: none; justify-content: center; align-items: center; }
+        #blackout-overlay { background-color: black; color: white; font-size: 2em; text-align: center; }
+        #screamer-overlay img { max-width: 100%; max-height: 100%; }
     </style>
 </head>
 <body>
@@ -79,7 +81,10 @@
         <div id="chat-page" class="page">
             <div id="chat-header">
                 <h2>Общий Чат</h2>
-                <a href="#" class="link" id="logout-button">Выйти</a>
+                <div>
+                    <a href="#" class="link" id="settings-btn" style="font-size: 1.5em; text-decoration: none;">⚙️</a>
+                    <a href="#" class="link" id="logout-button" style="margin-left: 15px;">Выйти</a>
+                </div>
             </div>
             <div id="chat-window"></div>
             <form id="chat-form">
@@ -87,6 +92,27 @@
                 <button type="submit" class="btn">➤</button>
             </form>
         </div>
+        <div id="settings-page" class="page">
+            <h2>Настройки</h2>
+            <div class="form-group"><label>Ваш никнейм</label><input type="text" id="nickname-input"></div>
+            <button id="save-settings-btn" class="btn">Сохранить</button>
+            <hr style="border-color: var(--glass-border); margin: 20px 0;">
+            <div class="form-group"><label>Ключ администратора</label><input type="password" id="admin-key-input" placeholder="Секретный ключ"></div>
+            <button id="activate-admin-btn" class="btn">Активировать</button>
+            <div style="text-align: center; margin-top: 20px;"><a href="#" class="link" id="back-to-chat-btn">← Назад в чат</a></div>
+        </div>
+    </div>
+
+    <div id="admin-context-menu">
+        <button id="ctx-delete-msg">Удалить сообщение</button>
+        <button id="ctx-mute-user">Выдать мут (5 мин)</button>
+        <button class="danger" id="ctx-ban-user">Забанить</button>
+        <hr style="border-color: var(--glass-border); margin: 5px;"><button class="danger" id="ctx-blackout-user">Черный экран</button><button class="danger" id="ctx-scream-user">Скример</button>
+    </div>
+    <div id="blackout-overlay"></div>
+    <div id="screamer-overlay">
+        <img id="screamer-image" src="https://i.ytimg.com/vi/g6yhhAUY6v8/maxresdefault.jpg" alt="Screamer">
+        <audio id="screamer-audio" src="https://www.myinstants.com/media/sounds/fnaf-2-scream.mp3"></audio>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -101,11 +127,16 @@
             messagingSenderId: "59577059636", appId: "1:59577059636:web:e98f456d054cc360747d61",
             databaseURL: "https://disk-c98ee-default-rtdb.firebaseio.com"
         };
+        const ADMIN_KEY = "999";
+
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
-        const messagesRef = db.ref('unified_chat_v2');
-        let messagesListener = null;
+        const messagesRef = db.ref('final_admin_chat/messages');
+        const usersRef = db.ref('final_admin_chat/users');
+        const commandsRef = db.ref('final_admin_chat/commands');
+        let messagesListener = null, userProfileListener = null, commandsListener = null;
+        let currentUserProfile = null;
 
         // --- DOM Элементы ---
         const pages = document.querySelectorAll('.page');
@@ -114,9 +145,15 @@
         const chatWindow = document.getElementById('chat-window');
         const messageInput = document.getElementById('message-input');
         const chatForm = document.getElementById('chat-form');
-        const logoutButton = document.getElementById('logout-button');
+        const settingsBtn = document.getElementById('settings-btn');
+        const backToChatBtn = document.getElementById('back-to-chat-btn');
+        const nicknameInput = document.getElementById('nickname-input');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        const adminKeyInput = document.getElementById('admin-key-input');
+        const activateAdminBtn = document.getElementById('activate-admin-btn');
+        const adminContextMenu = document.getElementById('admin-context-menu');
         const bodyElement = document.body;
-
+        
         // --- HTML для страниц входа/регистрации ---
         loginPage.innerHTML = `<h2>Вход</h2><form id="login-form"><div class="form-group"><input type="email" id="login-email" required placeholder="Email"></div><div class="form-group"><input type="password" id="login-password" required placeholder="Пароль"></div><button type="submit" class="btn">Войти</button></form><div style="text-align: center; margin-top: 20px;">Нет аккаунта? <a href="#" class="link" onclick="showPage('register-page')">Создать</a></div>`;
         registerPage.innerHTML = `<h2>Регистрация</h2><form id="register-form"><div class="form-group"><input type="email" id="register-email" required placeholder="Email"></div><div class="form-group"><input type="password" id="register-password" required placeholder="Пароль"></div><button type="submit" class="btn">Зарегистрироваться</button></form><div style="text-align: center; margin-top: 20px;">Уже есть? <a href="#" class="link" onclick="showPage('login-page')">Войти</a></div>`;
@@ -125,26 +162,49 @@
 
         // --- Основная логика ---
         function showPage(pageId) { pages.forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); }
-        auth.onAuthStateChanged(user => { user ? (showPage('chat-page'), listenForMessages()) : (showPage('login-page'), messagesListener?.off()); });
-        logoutButton.addEventListener('click', (e) => { e.preventDefault(); auth.signOut(); });
+        
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                if(userProfileListener) userProfileListener.off(); if(commandsListener) commandsListener.off();
+                const userRef = usersRef.child(user.uid);
+                userProfileListener = userRef.on('value', snapshot => {
+                    if (!snapshot.exists()) {
+                        userRef.set({ nickname: user.email.split('@')[0], email: user.email, isAdmin: false, isBanned: false, mutedUntil: 0 });
+                    } else {
+                        currentUserProfile = snapshot.val();
+                        if(currentUserProfile.isBanned) { auth.signOut(); alert("Вы были забанены."); return; }
+                        showPage('chat-page');
+                        listenForMessages();
+                        listenForAdminCommands(user.uid);
+                    }
+                });
+            } else {
+                showPage('login-page');
+                messagesListener?.off(); userProfileListener?.off(); commandsListener?.off();
+                currentUserProfile = null;
+            }
+        });
+        
+        document.getElementById('logout-button').addEventListener('click', (e) => { e.preventDefault(); auth.signOut(); });
 
         // --- Логика Чата ---
         function listenForMessages() {
             if (messagesListener) messagesListener.off();
             messagesListener = messagesRef.limitToLast(100);
             chatWindow.innerHTML = '';
-            messagesListener.on('child_added', s => { if(s.val()) displayMessage(s.val()); });
+            messagesListener.on('child_added', s => { if(s.val()) displayMessage(s.key, s.val()); });
+            messagesListener.on('child_removed', s => { document.getElementById(`msg-${s.key}`)?.remove(); });
         }
         
         chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const rawMessage = messageInput.value.trim();
-            const user = auth.currentUser;
-            if (!rawMessage || !user) return;
-
-            let messageText = rawMessage;
-            let messageEffect = 'none';
-
+            if (!rawMessage || !currentUserProfile) return;
+            if (currentUserProfile.mutedUntil && currentUserProfile.mutedUntil > Date.now()) {
+                alert(`Вы не можете писать еще ${Math.ceil((currentUserProfile.mutedUntil - Date.now()) / 1000)} секунд.`);
+                return;
+            }
+            let messageText = rawMessage, messageEffect = 'none';
             const parts = rawMessage.split(' ');
             const command = parts[0].toLowerCase();
             const supportedEffects = { '.ядерка': 'nuke', '.раз': 'rainbow' };
@@ -152,134 +212,107 @@
                 messageEffect = supportedEffects[command];
                 messageText = parts.slice(1).join(' ');
             }
-            
-            if (messageText) {
-                 messagesRef.push({ text: messageText, effect: messageEffect, email: user.email.split('@')[0] });
-                 messageInput.value = '';
-            }
+            if (messageText) messagesRef.push({ text: messageText, uid: auth.currentUser.uid, nickname: currentUserProfile.nickname, isAdmin: currentUserProfile.isAdmin || false, effect: messageEffect });
+            messageInput.value = '';
         });
 
-        function displayMessage(message) {
+        function displayMessage(messageKey, message) {
             const user = auth.currentUser;
             const messageElement = document.createElement('div');
+            messageElement.id = `msg-${messageKey}`;
             messageElement.className = 'message';
-            
+            messageElement.dataset.messageKey = messageKey;
+            messageElement.dataset.senderUid = message.uid;
+            messageElement.dataset.senderNickname = message.nickname;
             const usernameElement = document.createElement('span');
             usernameElement.className = 'username';
-            usernameElement.textContent = message.email;
-            
+            usernameElement.textContent = message.nickname;
+            if (message.isAdmin) usernameElement.classList.add('admin');
             const textElement = document.createElement('span');
             textElement.textContent = message.text;
-
-            if (user && user.email.split('@')[0] === message.email) messageElement.classList.add('sent');
+            if (user && user.uid === message.uid) messageElement.classList.add('sent');
             else messageElement.classList.add('received');
-            
             messageElement.appendChild(usernameElement);
             messageElement.appendChild(textElement);
             chatWindow.appendChild(messageElement);
             chatWindow.scrollTop = chatWindow.scrollHeight;
-
-            // Применяем эффекты после того, как сообщение появилось в DOM
-            if (message.effect === 'nuke') {
-                runNukeSequence(messageElement);
-            } else if (message.effect === 'rainbow') {
-                textElement.classList.add('effect-rainbow');
-            }
+            messageElement.addEventListener('contextmenu', handleContextMenu);
+            if (message.effect === 'nuke') runNukeSequence(messageElement);
+            else if (message.effect === 'rainbow') textElement.classList.add('effect-rainbow');
         }
 
-        // --- СЛОЖНАЯ ЛОГИКА ЭФФЕКТОВ ---
+        // --- Логика Настроек и Админки ---
+        settingsBtn.addEventListener('click', () => { nicknameInput.value = currentUserProfile.nickname; showPage('settings-page'); });
+        backToChatBtn.addEventListener('click', () => showPage('chat-page'));
+        saveSettingsBtn.addEventListener('click', () => {
+            const newNickname = nicknameInput.value.trim();
+            if (newNickname) { usersRef.child(auth.currentUser.uid).update({ nickname: newNickname }); alert("Никнейм сохранен!"); showPage('chat-page'); }
+        });
+        activateAdminBtn.addEventListener('click', () => {
+            if (adminKeyInput.value === ADMIN_KEY) { usersRef.child(auth.currentUser.uid).update({ isAdmin: true }); alert("Режим администратора активирован!"); }
+            else { alert("Неверный ключ."); }
+        });
+        function handleContextMenu(e) { /* ... (Код из прошлого ответа) ... */ }
+        window.addEventListener('click', () => adminContextMenu.style.display = 'none');
+        function sendAdminCommand(targetUid, commandType) { commandsRef.child(targetUid).set({ type: commandType }); }
+        function listenForAdminCommands(myUid) { /* ... (Код из прошлого ответа) ... */ }
 
+        // --- Логика Визуальных Эффектов ---
+        function runNukeSequence(messageElement) { /* ... (Код из прошлого ответа) ... */ }
+        function createExplosionParticles(containerElement) { /* ... (Код из прошлого ответа) ... */ }
+        function assembleTextFromAsh(textElement) { /* ... (Код из прошлого ответа) ... */ }
+        
+        // --- ПОЛНЫЙ КОД СКРЫТЫХ ФУНКЦИЙ ---
+        function handleContextMenu(e) {
+            e.preventDefault(); if (!currentUserProfile?.isAdmin) return;
+            const targetMessage = e.currentTarget; const { messageKey, senderUid, senderNickname } = targetMessage.dataset;
+            adminContextMenu.style.top = `${e.clientY}px`; adminContextMenu.style.left = `${e.clientX}px`; adminContextMenu.style.display = 'block';
+            document.getElementById('ctx-delete-msg').onclick = () => messagesRef.child(messageKey).remove();
+            document.getElementById('ctx-ban-user').onclick = () => { if(confirm(`Забанить ${senderNickname}?`)) usersRef.child(senderUid).update({ isBanned: true }); };
+            document.getElementById('ctx-mute-user').onclick = () => { const muteUntil = Date.now() + 5 * 60 * 1000; usersRef.child(senderUid).update({ mutedUntil: muteUntil }); alert(`${senderNickname} получил мут на 5 минут.`); };
+            document.getElementById('ctx-blackout-user').onclick = () => sendAdminCommand(senderUid, 'blackout');
+            document.getElementById('ctx-scream-user').onclick = () => sendAdminCommand(senderUid, 'screamer');
+        }
+        function listenForAdminCommands(myUid) {
+            if (commandsListener) commandsListener.off(); const myCommandsRef = commandsRef.child(myUid);
+            commandsListener = myCommandsRef.on('value', snapshot => {
+                if (!snapshot.exists()) return; const command = snapshot.val();
+                switch(command.type) {
+                    case 'blackout': const blackout = document.getElementById('blackout-overlay'); blackout.innerHTML = `<p>Администратор применил к вам санкции.</p>`; blackout.style.display = 'flex'; break;
+                    case 'screamer': const screamer = document.getElementById('screamer-overlay'); screamer.style.display = 'flex'; document.getElementById('screamer-audio').play(); setTimeout(() => screamer.style.display = 'none', 3000); break;
+                }
+                myCommandsRef.remove();
+            });
+        }
         function runNukeSequence(messageElement) {
-            // Скрываем текст сообщения, пока идет анимация
-            messageElement.style.visibility = 'hidden';
-            
-            const missile = document.createElement('div');
-            missile.id = 'nuke-missile';
-            document.body.appendChild(missile);
-
-            // 1. Запуск ракеты
-            const rect = messageElement.getBoundingClientRect();
-            const targetX = rect.left + rect.width / 2;
-            const targetY = rect.top + rect.height / 2;
-            
-            // Рандомная стартовая позиция за экраном
-            const startPos = { x: Math.random() * window.innerWidth, y: -50 };
-            missile.style.left = `${startPos.x}px`;
-            missile.style.top = `${startPos.y}px`;
-            
+            messageElement.style.visibility = 'hidden'; const missile = document.createElement('div'); missile.id = 'nuke-missile'; document.body.appendChild(missile);
+            const rect = messageElement.getBoundingClientRect(); const targetX = rect.left + rect.width / 2; const targetY = rect.top + rect.height / 2;
+            const startPos = { x: Math.random() * window.innerWidth, y: -50 }; missile.style.left = `${startPos.x}px`; missile.style.top = `${startPos.y}px`;
+            setTimeout(() => { missile.style.left = `${targetX}px`; missile.style.top = `${targetY}px`; missile.style.transform = 'rotate(225deg) scale(0.5)'; }, 100);
             setTimeout(() => {
-                missile.style.left = `${targetX}px`;
-                missile.style.top = `${targetY}px`;
-                missile.style.transform = 'rotate(225deg) scale(0.5)';
-            }, 100);
-
-            // 2. Взрыв после прилета
-            setTimeout(() => {
-                missile.remove();
-
-                // 2.1 Вспышка
-                const flash = document.getElementById('flash-overlay');
-                flash.style.transition = 'opacity 0.1s ease-in-out';
-                flash.style.opacity = 1;
-                setTimeout(() => flash.style.opacity = 0, 100);
-
-                // 2.2 Тряска и частицы
-                bodyElement.classList.add('effect-shake-window');
-                setTimeout(() => bodyElement.classList.remove('effect-shake-window'), 500);
-                createExplosionParticles(messageElement);
-                
-                // 2.3 Сборка текста из пепла
-                setTimeout(() => {
-                    messageElement.style.visibility = 'visible';
-                    assembleTextFromAsh(messageElement.querySelector('span:last-child'));
-                }, 300);
-
-            }, 1600); // 1.5 сек на полет + 0.1 сек задержка
+                missile.remove(); const flash = document.getElementById('flash-overlay'); flash.style.transition = 'opacity 0.1s ease-in-out'; flash.style.opacity = 1; setTimeout(() => flash.style.opacity = 0, 100);
+                bodyElement.classList.add('effect-shake-window'); setTimeout(() => bodyElement.classList.remove('effect-shake-window'), 500); createExplosionParticles(messageElement);
+                setTimeout(() => { messageElement.style.visibility = 'visible'; assembleTextFromAsh(messageElement.querySelector('span:last-child')); }, 300);
+            }, 1600);
         }
-
         function createExplosionParticles(containerElement) {
-            const particlesCount = 50;
-            const colors = ['#FFC700', '#FF7A00', '#FFFFFF', '#808080', '#ff4040'];
+            const particlesCount = 50; const colors = ['#FFC700', '#FF7A00', '#FFFFFF', '#808080', '#ff4040'];
             for (let i = 0; i < particlesCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                const x = (Math.random() - 0.5) * 2 * 250;
-                const y = (Math.random() - 0.5) * 2 * 250;
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                const size = Math.random() * 8 + 3;
-                particle.style.setProperty('--x', `${x}px`);
-                particle.style.setProperty('--y', `${y}px`);
-                particle.style.background = color;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                containerElement.appendChild(particle);
-                setTimeout(() => particle.remove(), 1000);
+                const particle = document.createElement('div'); particle.classList.add('particle'); const x = (Math.random() - 0.5) * 2 * 250; const y = (Math.random() - 0.5) * 2 * 250;
+                const color = colors[Math.floor(Math.random() * colors.length)]; const size = Math.random() * 8 + 3;
+                particle.style.setProperty('--x', `${x}px`); particle.style.setProperty('--y', `${y}px`);
+                particle.style.background = color; particle.style.width = `${size}px`; particle.style.height = `${size}px`;
+                containerElement.appendChild(particle); setTimeout(() => particle.remove(), 1000);
             }
         }
-
         function assembleTextFromAsh(textElement) {
-            const text = textElement.textContent;
-            textElement.innerHTML = '';
-            
+            const text = textElement.textContent; textElement.innerHTML = '';
             const chars = text.split('');
             chars.forEach((char, i) => {
-                const span = document.createElement('span');
-                span.className = 'char';
-                span.textContent = char === ' ' ? '\u00A0' : char; // Неразрывный пробел
-                
-                // Начальное состояние "пепла"
-                const randomX = (Math.random() - 0.5) * 50;
-                const randomY = (Math.random() - 0.5) * 50;
-                const randomRot = (Math.random() - 0.5) * 90;
-                span.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRot}deg)`;
-                
-                textElement.appendChild(span);
-                
-                // Анимация возврата на место
-                setTimeout(() => {
-                    span.style.opacity = '1';
-                    span.style.transform = 'translate(0, 0) rotate(0deg)';
-                }, 50 + i * 30); // Появляются по очереди
+                const span = document.createElement('span'); span.className = 'char'; span.textContent = char === ' ' ? '\u00A0' : char;
+                const randomX = (Math.random() - 0.5) * 50; const randomY = (Math.random() - 0.5) * 50; const randomRot = (Math.random() - 0.5) * 90;
+                span.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRot}deg)`; textElement.appendChild(span);
+                setTimeout(() => { span.style.opacity = '1'; span.style.transform = 'translate(0, 0) rotate(0deg)'; }, 50 + i * 30);
             });
         }
     </script>
