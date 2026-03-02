@@ -13,7 +13,7 @@
             --border-glass: rgba(255, 255, 255, 0.08);
         }
 
-        /* ИСПРАВЛЕНИЕ СКРОЛЛБАРА (ТОЛЬКО ОДИН СВЕРХУ ВНИЗ) */
+        /* ЕДИНЫЙ КАСТОМНЫЙ СКРОЛЛБАР */
         ::-webkit-scrollbar {
             width: 6px;
             background: #000;
@@ -21,7 +21,7 @@
         ::-webkit-scrollbar-thumb {
             background: var(--neon);
             border-radius: 10px;
-            box-shadow: 0 0 10px var(--neon);
+            box-shadow: 0 0 12px var(--neon);
         }
 
         body, html {
@@ -29,13 +29,13 @@
             padding: 0;
             height: 100%;
             width: 100%;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             color: white;
-            overflow: hidden; /* Отключаем скролл у body, чтобы не было двойной полосы */
+            overflow: hidden; /* Убираем двойной скролл браузера */
         }
 
-        /* УЛЬТРА-БЫСТРЫЙ ЛОАДЕР */
+        /* ЭКРАН ЗАГРУЗКИ (МОМЕНТАЛЬНЫЙ) */
         #loader {
             position: fixed;
             inset: 0;
@@ -45,18 +45,19 @@
             align-items: center;
             justify-content: center;
             z-index: 9999;
-            transition: opacity 0.4s ease, visibility 0.4s;
+            transition: opacity 0.5s ease, visibility 0.5s;
         }
 
         .counter {
-            font-size: 5rem;
+            font-size: clamp(4rem, 15vw, 6rem);
             font-weight: 900;
             color: var(--neon);
-            text-shadow: 0 0 25px var(--neon);
+            text-shadow: 0 0 30px var(--neon);
             font-style: italic;
+            transition: 0.1s;
         }
 
-        /* СТЕКЛЯННЫЙ ТУЛБАР (ОПТИМИЗИРОВАН) */
+        /* СТЕКЛЯННЫЙ ТУЛБАР */
         .toolbar {
             position: fixed;
             top: 0;
@@ -72,60 +73,61 @@
             border-bottom: 1px solid var(--border-glass);
             z-index: 1000;
             box-sizing: border-box;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #title {
             font-size: 0.85rem;
             flex-grow: 1;
-            color: #999;
+            color: #888;
             text-transform: uppercase;
             letter-spacing: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            cursor: pointer; /* Для активации пасхалки на телефоне */
         }
 
         .btn-neon {
             border: 1px solid var(--neon);
             color: var(--neon);
             text-decoration: none;
-            padding: 7px 18px;
+            padding: 8px 18px;
             border-radius: 4px;
             font-size: 11px;
             font-weight: bold;
             transition: 0.2s;
             background: transparent;
-            cursor: pointer;
             text-transform: uppercase;
             flex-shrink: 0;
+            cursor: pointer;
         }
 
         .btn-neon:hover {
             background: var(--neon);
             color: black;
-            box-shadow: 0 0 15px var(--neon);
+            box-shadow: 0 0 20px var(--neon);
         }
 
-        /* КОНТЕЙНЕР ДЛЯ МОБИЛОК И ПК */
+        /* КОНТЕЙНЕР КОНТЕНТА (ОПТИМИЗАЦИЯ СКРОЛЛА) */
         .viewer-container {
             position: absolute;
-            top: 60px; /* Сдвиг под тулбар */
+            top: 60px;
             left: 0;
             right: 0;
             bottom: 0;
             opacity: 0;
-            filter: blur(10px);
-            transform: translateY(10px);
-            transition: all 0.7s cubic-bezier(0.1, 1, 0.1, 1);
-            overflow-y: auto; /* Позволяем скролл только тут */
+            filter: blur(15px);
+            transform: scale(1.05);
+            transition: all 0.8s cubic-bezier(0.2, 1, 0.2, 1);
+            overflow-y: auto; /* Скролл только здесь */
             -webkit-overflow-scrolling: touch;
         }
 
         .viewer-container.active {
             opacity: 1;
             filter: blur(0);
-            transform: translateY(0);
+            transform: scale(1);
         }
 
         iframe {
@@ -135,25 +137,25 @@
             display: block;
         }
 
-        /* УВЕДОМЛЕНИЕ АЛЕКСАНДРА */
+        /* УВЕДОМЛЕНИЕ: АЛЕКСАНДРА */
         #alert-box {
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) scale(0.7);
-            background: rgba(10, 10, 10, 0.95);
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(10, 10, 10, 0.98);
             border: 1px solid var(--pink);
             padding: 30px;
-            border-radius: 15px;
+            border-radius: 20px;
             text-align: center;
-            box-shadow: 0 0 40px rgba(255, 0, 85, 0.3);
+            box-shadow: 0 0 50px rgba(255, 0, 85, 0.4);
             z-index: 10001;
             display: none;
             opacity: 0;
             transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             width: 85%;
             max-width: 320px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
         }
 
         #alert-box.show {
@@ -162,24 +164,13 @@
             transform: translate(-50%, -50%) scale(1);
         }
 
-        #alert-box h3 {
-            color: var(--pink);
-            margin: 0 0 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        #alert-box h3 { color: var(--pink); margin: 0 0 10px; text-transform: uppercase; }
+        #alert-box p { font-size: 0.95rem; color: #ddd; margin-bottom: 25px; }
 
-        #alert-box p {
-            font-size: 0.95rem;
-            color: #ccc;
-            margin-bottom: 25px;
-        }
-
-        /* АДАПТИВНОСТЬ */
-        @media (max-width: 480px) {
-            #title { font-size: 0.7rem; }
-            .counter { font-size: 3.5rem; }
-            .toolbar { padding: 0 15px; }
+        /* СКРЫТЫЕ ЭЛЕМЕНТЫ ПРИ АКТИВАЦИИ ПАСХАЛКИ */
+        .pink-mode {
+            border-bottom: 1px solid var(--pink) !important;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.2) !important;
         }
     </style>
 </head>
@@ -210,10 +201,10 @@
         const content = document.getElementById('content');
         const alertBox = document.getElementById('alert-box');
         
-        // Почти моментальная загрузка (имитация)
+        // Быстрый запуск (0.5 сек на всё)
         let val = 0;
         const fastLoad = setInterval(() => {
-            val += Math.floor(Math.random() * 25) + 15;
+            val += Math.floor(Math.random() * 20) + 15;
             if (val >= 100) {
                 val = 100;
                 clearInterval(fastLoad);
@@ -222,43 +213,46 @@
                     setTimeout(() => {
                         loader.style.display = 'none';
                         content.classList.add('active');
-                        // Таймер на Александру (10 секунд)
+                        // Таймер на 10 секунд
                         setTimeout(() => {
                             alertBox.classList.add('show');
                         }, 10000);
-                    }, 400);
+                    }, 500);
                 }, 100);
             }
             percentEl.innerText = val;
         }, 40);
 
-        // Функция закрытия уведомления
         function closeAlert() {
             alertBox.style.opacity = '0';
-            alertBox.style.transform = 'translate(-50%, -50%) scale(0.8)';
             setTimeout(() => { alertBox.style.display = 'none'; }, 400);
         }
 
-        // Пасхалка на пробел
+        // Логика пасхалки
+        function activateEasterEgg() {
+            const title = document.getElementById('title');
+            const toolbar = document.getElementById('main-toolbar');
+            const btn = document.getElementById('main-btn');
+            
+            title.innerText = 'said.pedofil';
+            title.style.color = 'var(--pink)';
+            title.style.textShadow = '0 0 10px #ff0055';
+            
+            toolbar.classList.add('pink-mode');
+            btn.style.borderColor = 'var(--pink)';
+            btn.style.color = 'var(--pink)';
+        }
+
+        // Пасхалка на пробел (ПК)
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 e.preventDefault();
-                const title = document.getElementById('title');
-                const toolbar = document.getElementById('main-toolbar');
-                
-                title.innerText = 'said.pedofil';
-                title.style.color = var(--pink);
-                title.style.textShadow = '0 0 10px ' + getComputedStyle(document.documentElement).getPropertyValue('--pink');
-                
-                toolbar.style.borderBottom = '1px solid var(--pink)';
-                toolbar.style.boxShadow = '0 0 25px rgba(255, 0, 85, 0.2)';
+                activateEasterEgg();
             }
         });
 
-        // Для мобилок: пасхалка по тапу на заголовок
-        document.getElementById('title').addEventListener('click', () => {
-            document.dispatchEvent(new KeyboardEvent('keydown', {'code': 'Space'}));
-        });
+        // Пасхалка на клик по названию (Телефон)
+        document.getElementById('title').addEventListener('click', activateEasterEgg);
     </script>
 </body>
 </html>
