@@ -5,57 +5,106 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Презентация 1.pdf</title>
     <style>
-        /* Общие стили */
-        body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; background: #1a1a1a; overflow: hidden; }
+        /* Обнуление стилей */
+        body, html { 
+            margin: 0; padding: 0; height: 100%; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #121212; overflow: hidden; 
+        }
 
-        /* Экрана загрузки (плавное исчезновение) */
+        /* Анимированный переливающийся фон загрузки */
         #loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #1a1a1a; color: white; display: flex;
-            align-items: center; justify-content: center; z-index: 9999;
-            transition: opacity 1s ease-out, visibility 1s;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 9999;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.2s;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Стиль текста при загрузке */
+        #loader h2 {
+            color: white; font-weight: 300; letter-spacing: 2px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.98); }
         }
 
         /* Кастомный Тулбар */
         .toolbar {
-            height: 50px; background: #333; color: white;
-            display: flex; align-items: center; padding: 0 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5); position: relative; z-index: 10;
-        }
-        .toolbar h1 { font-size: 18px; margin: 0; flex-grow: 1; }
-        .btn-download {
-            background: #007bff; color: white; text-decoration: none;
-            padding: 8px 15px; border-radius: 4px; font-size: 14px;
+            height: 60px; background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(10px); color: white;
+            display: flex; align-items: center; padding: 0 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative; z-index: 10;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* Контейнер для презентации */
-        .viewer-container { height: calc(100vh - 50px); width: 100%; }
+        .toolbar h1 { font-size: 1.1rem; margin: 0; flex-grow: 1; font-weight: 400; color: #ddd; }
+
+        .btn-download {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 30px;
+            font-size: 14px; font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(110, 142, 251, 0.4);
+        }
+
+        /* Контейнер для PDF */
+        .viewer-container {
+            height: calc(100vh - 60px); width: 100%;
+            background: #1a1a1a;
+            opacity: 0; transform: translateY(20px);
+            transition: all 1.5s ease-out 0.5s; /* Плавное появление контента */
+        }
+
+        .viewer-container.show { opacity: 1; transform: translateY(0); }
+
         iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <h2 id="loader-text">Добро пожаловать. Загрузка презентации...</h2>
+        <h2 id="loader-text">ПОДОЖДИТЕ, ИДЕТ ЗАГРУЗКА...</h2>
     </div>
 
     <div class="toolbar">
-        <h1>Просмотр: 1.pdf</h1>
-        <a href="1.pdf" download class="btn-download">Скачать PDF</a>
+        <h1>Просмотр презентации: 1.pdf</h1>
+        <a href="1.pdf" download class="btn-download">Скачать файл</a>
     </div>
 
-    <div class="viewer-container">
-        <iframe src="https://docs.google.com/viewer?url=https://ВАШ_НИК.github.io/ИМЯ_РЕПОЗИТОРИЯ/1.pdf&embedded=true"></iframe>
+    <div class="viewer-container" id="content">
+        <iframe src="1.pdf#toolbar=0" type="application/pdf"></iframe>
     </div>
 
     <script>
-        // Анимация исчезновения текста и фона
         window.addEventListener('load', () => {
             const loader = document.getElementById('loader');
+            const content = document.getElementById('content');
+
+            // Убираем лоадер и проявляем контент
             setTimeout(() => {
                 loader.style.opacity = '0';
                 loader.style.visibility = 'hidden';
-            }, 1500); // Исчезнет через 1.5 секунды
+                content.classList.add('show');
+            }, 2500); // 2.5 секунды любуемся фоном и ждем загрузки
         });
     </script>
 
