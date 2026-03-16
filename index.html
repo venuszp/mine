@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Drive | 1.pptx</title>
+    <title>Neon Drive | Tish Anatomiyasi</title>
     <style>
         :root {
             --neon: #00f2ff;
@@ -13,149 +13,61 @@
             --border-glass: rgba(255, 255, 255, 0.08);
         }
 
-        ::-webkit-scrollbar {
-            width: 6px;
-            background: #000;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--neon);
-            border-radius: 10px;
-            box-shadow: 0 0 12px var(--neon);
-        }
+        ::-webkit-scrollbar { width: 6px; background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 10px; }
 
         body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
+            margin: 0; padding: 0; height: 100%; width: 100%;
             font-family: 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: white;
-            overflow: hidden;
+            background: var(--bg); color: white; overflow: hidden;
         }
 
+        /* ЛОАДЕР */
         #loader {
-            position: fixed;
-            inset: 0;
-            background: var(--bg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
+            position: fixed; inset: 0; background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999; transition: opacity 0.5s ease;
         }
+        .counter { font-size: clamp(4rem, 15vw, 8rem); font-weight: 900; color: var(--neon); text-shadow: 0 0 30px var(--neon); font-style: italic; }
 
-        .counter {
-            font-size: clamp(4rem, 15vw, 6rem);
-            font-weight: 900;
-            color: var(--neon);
-            text-shadow: 0 0 30px var(--neon);
-            font-style: italic;
-        }
-
+        /* ТУЛБАР */
         .toolbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            border-bottom: 1px solid var(--border-glass);
-            z-index: 1000;
-            box-sizing: border-box;
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; border-bottom: 1px solid var(--border-glass);
+            z-index: 1000; box-sizing: border-box;
         }
-
-        #title {
-            font-size: 0.85rem;
-            flex-grow: 1;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
-        }
+        #title { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; }
+        
+        .nav-buttons { display: flex; gap: 10px; }
 
         .btn-neon {
-            border: 1px solid var(--neon);
-            color: var(--neon);
-            text-decoration: none;
-            padding: 8px 18px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            transition: 0.2s;
-            background: transparent;
-            text-transform: uppercase;
-            cursor: pointer;
+            border: 1px solid var(--neon); color: var(--neon); text-decoration: none;
+            padding: 8px 15px; border-radius: 4px; font-size: 10px; font-weight: bold;
+            transition: 0.2s; background: transparent; text-transform: uppercase; cursor: pointer;
         }
+        .btn-neon:hover { background: var(--neon); color: black; box-shadow: 0 0 20px var(--neon); }
+        .btn-pptx { border-color: #ff9d00; color: #ff9d00; }
+        .btn-pptx:hover { background: #ff9d00; color: black; box-shadow: 0 0 20px #ff9d00; }
 
-        .btn-neon:hover {
-            background: var(--neon);
-            color: black;
-            box-shadow: 0 0 20px var(--neon);
-        }
-
+        /* КОНТЕНТ */
         .viewer-container {
-            position: absolute;
-            top: 60px;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: 0.8s;
+            position: absolute; top: 60px; left: 0; right: 0; bottom: 0;
+            opacity: 0; transition: 0.8s ease;
         }
+        .viewer-container.active { opacity: 1; }
+        iframe { width: 100%; height: 100%; border: none; background: #1a1a1a; }
 
-        .viewer-container.active {
-            opacity: 1;
-        }
-
-        .file-icon {
-            font-size: 80px;
-            color: var(--neon);
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px var(--neon);
-        }
-
+        /* АЛЕРТ */
         #alert-box {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.8);
-            background: rgba(10, 10, 10, 0.98);
-            border: 1px solid var(--pink);
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 0 50px rgba(255, 0, 85, 0.4);
-            z-index: 10001;
-            display: none;
-            opacity: 0;
-            transition: 0.4s;
-            width: 85%;
-            max-width: 320px;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(10, 10, 10, 0.98); border: 1px solid var(--pink);
+            padding: 30px; border-radius: 20px; text-align: center;
+            box-shadow: 0 0 50px rgba(255, 0, 85, 0.4); z-index: 10001;
+            display: none; opacity: 0; transition: 0.4s; width: 85%; max-width: 320px;
         }
-
-        #alert-box.show {
-            display: block;
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .pink-mode {
-            border-bottom: 1px solid var(--pink) !important;
-        }
+        #alert-box.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
     </style>
 </head>
 <body>
@@ -165,21 +77,22 @@
     </div>
 
     <div class="toolbar" id="main-toolbar">
-        <div id="title">просмотр 1.pptx</div>
-        <a href="1.pptx" download class="btn-neon" id="main-btn">СКАЧАТЬ</a>
+        <div id="title">Tishning anatomik tuzilishi</div>
+        <div class="nav-buttons">
+            <a href="1.pdf" download class="btn-neon">PDF</a>
+            <a href="1.pptx" download class="btn-neon btn-pptx">PPTX</a>
+        </div>
     </div>
 
     <div id="alert-box">
-        <h3 style="color: var(--pink); margin: 0 0 10px;">ВНИМАНИЕ!</h3>
+        <h3 style="color: var(--pink); margin-top: 0;">ВНИМАНИЕ!</h3>
         <p>Александра в 10 метрах от вас</p>
         <button class="btn-neon" style="border-color: var(--pink); color: var(--pink); width: 100%;" onclick="closeAlert()">ОК</button>
     </div>
 
-    <div class="viewer-container" id="content">
-        <div class="file-icon">📄</div>
-        <p style="color: #666; letter-spacing: 1px;">ПРЕДПРОСМОТР НЕДОСТУПЕН</p>
-        <a href="1.pptx" download class="btn-neon">СКАЧАТЬ PPTX</a>
-    </div>
+    <main class="viewer-container" id="content">
+        <iframe src="1.pdf#toolbar=0" id="pdf-frame"></iframe>
+    </main>
 
     <script>
         const percentEl = document.getElementById('percent');
@@ -189,7 +102,7 @@
         
         let val = 0;
         const fastLoad = setInterval(() => {
-            val += Math.floor(Math.random() * 20) + 15;
+            val += Math.floor(Math.random() * 25) + 15;
             if (val >= 100) {
                 val = 100;
                 clearInterval(fastLoad);
@@ -209,13 +122,9 @@
 
         function activateEasterEgg() {
             const title = document.getElementById('title');
-            const toolbar = document.getElementById('main-toolbar');
-            const btn = document.getElementById('main-btn');
             title.innerText = 'said.pedofil';
             title.style.color = 'var(--pink)';
-            toolbar.classList.add('pink-mode');
-            btn.style.borderColor = 'var(--pink)';
-            btn.style.color = 'var(--pink)';
+            document.getElementById('main-toolbar').style.borderBottom = '1px solid var(--pink)';
         }
 
         document.addEventListener('keydown', (e) => { if (e.code === 'Space') activateEasterEgg(); });
