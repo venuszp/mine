@@ -13,7 +13,6 @@
             --border-glass: rgba(255, 255, 255, 0.08);
         }
 
-        /* ЕДИНЫЙ КАСТОМНЫЙ СКРОЛЛБАР */
         ::-webkit-scrollbar {
             width: 6px;
             background: #000;
@@ -32,10 +31,9 @@
             font-family: 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             color: white;
-            overflow: hidden; 
+            overflow: hidden;
         }
 
-        /* ЭКРАН ЗАГРУЗКИ */
         #loader {
             position: fixed;
             inset: 0;
@@ -45,7 +43,7 @@
             align-items: center;
             justify-content: center;
             z-index: 9999;
-            transition: opacity 0.5s ease, visibility 0.5s;
+            transition: opacity 0.5s ease;
         }
 
         .counter {
@@ -54,10 +52,8 @@
             color: var(--neon);
             text-shadow: 0 0 30px var(--neon);
             font-style: italic;
-            transition: 0.1s;
         }
 
-        /* СТЕКЛЯННЫЙ ТУЛБАР */
         .toolbar {
             position: fixed;
             top: 0;
@@ -73,7 +69,6 @@
             border-bottom: 1px solid var(--border-glass);
             z-index: 1000;
             box-sizing: border-box;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #title {
@@ -99,7 +94,6 @@
             transition: 0.2s;
             background: transparent;
             text-transform: uppercase;
-            flex-shrink: 0;
             cursor: pointer;
         }
 
@@ -109,35 +103,31 @@
             box-shadow: 0 0 20px var(--neon);
         }
 
-        /* КОНТЕЙНЕР КОНТЕНТА */
         .viewer-container {
             position: absolute;
             top: 60px;
             left: 0;
             right: 0;
             bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             opacity: 0;
-            filter: blur(15px);
-            transform: scale(1.05);
-            transition: all 0.8s cubic-bezier(0.2, 1, 0.2, 1);
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            transition: 0.8s;
         }
 
         .viewer-container.active {
             opacity: 1;
-            filter: blur(0);
-            transform: scale(1);
         }
 
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
+        .file-icon {
+            font-size: 80px;
+            color: var(--neon);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px var(--neon);
         }
 
-        /* УВЕДОМЛЕНИЕ */
         #alert-box {
             position: fixed;
             top: 50%;
@@ -152,10 +142,9 @@
             z-index: 10001;
             display: none;
             opacity: 0;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: 0.4s;
             width: 85%;
             max-width: 320px;
-            backdrop-filter: blur(15px);
         }
 
         #alert-box.show {
@@ -164,12 +153,8 @@
             transform: translate(-50%, -50%) scale(1);
         }
 
-        #alert-box h3 { color: var(--pink); margin: 0 0 10px; text-transform: uppercase; }
-        #alert-box p { font-size: 0.95rem; color: #ddd; margin-bottom: 25px; }
-
         .pink-mode {
             border-bottom: 1px solid var(--pink) !important;
-            box-shadow: 0 0 20px rgba(255, 0, 85, 0.2) !important;
         }
     </style>
 </head>
@@ -185,13 +170,15 @@
     </div>
 
     <div id="alert-box">
-        <h3>Внимание!</h3>
+        <h3 style="color: var(--pink); margin: 0 0 10px;">ВНИМАНИЕ!</h3>
         <p>Александра в 10 метрах от вас</p>
-        <button class="btn-neon" style="border-color: var(--pink); color: var(--pink); width: 100%; padding: 12px;" onclick="closeAlert()">ОК</button>
+        <button class="btn-neon" style="border-color: var(--pink); color: var(--pink); width: 100%;" onclick="closeAlert()">ОК</button>
     </div>
 
     <div class="viewer-container" id="content">
-        <iframe src="1.pptx"></iframe>
+        <div class="file-icon">📄</div>
+        <p style="color: #666; letter-spacing: 1px;">ПРЕДПРОСМОТР НЕДОСТУПЕН</p>
+        <a href="1.pptx" download class="btn-neon">СКАЧАТЬ PPTX</a>
     </div>
 
     <script>
@@ -211,41 +198,27 @@
                     setTimeout(() => {
                         loader.style.display = 'none';
                         content.classList.add('active');
-                        setTimeout(() => {
-                            alertBox.classList.add('show');
-                        }, 10000);
+                        setTimeout(() => { alertBox.classList.add('show'); }, 10000);
                     }, 500);
                 }, 100);
             }
             percentEl.innerText = val;
         }, 40);
 
-        function closeAlert() {
-            alertBox.style.opacity = '0';
-            setTimeout(() => { alertBox.style.display = 'none'; }, 400);
-        }
+        function closeAlert() { alertBox.style.opacity = '0'; setTimeout(() => { alertBox.style.display = 'none'; }, 400); }
 
         function activateEasterEgg() {
             const title = document.getElementById('title');
             const toolbar = document.getElementById('main-toolbar');
             const btn = document.getElementById('main-btn');
-            
             title.innerText = 'said.pedofil';
             title.style.color = 'var(--pink)';
-            title.style.textShadow = '0 0 10px #ff0055';
-            
             toolbar.classList.add('pink-mode');
             btn.style.borderColor = 'var(--pink)';
             btn.style.color = 'var(--pink)';
         }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                activateEasterEgg();
-            }
-        });
-
+        document.addEventListener('keydown', (e) => { if (e.code === 'Space') activateEasterEgg(); });
         document.getElementById('title').addEventListener('click', activateEasterEgg);
     </script>
 </body>
